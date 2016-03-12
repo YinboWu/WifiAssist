@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/edit.ico</file>
+        <file>img/WifiAssist.ico</file>
+    </qresource>
+</RCC>

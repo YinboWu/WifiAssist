@@ -11,8 +11,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->textEdit_name->setText(wifi.APName());
-    ui->textEdit_pwd ->setText(wifi.Password());
+    //ui->textEdit_name->setText(wifi.APName());
+    //ui->textEdit_pwd ->setText(wifi.Password());
+
+    ui->lineEdit_name->setText(wifi.APName());
+    ui->lineEdit_pwd ->setText(wifi.Password());
 
     wifi.setPath_exec(QDir::currentPath()+"/wifi.sh");
 }
@@ -41,4 +44,24 @@ void MainWindow::on_pushButton_clicked()
     {
         QMessageBox::warning(NULL,"Error","Wrong!");
     }
+}
+
+void MainWindow::on_pushButton_name_clicked()
+{
+    ui->lineEdit_name->setEnabled(true);
+}
+
+void MainWindow::on_lineEdit_name_editingFinished()
+{
+    ui->lineEdit_name->setEnabled(false);
+}
+
+void MainWindow::on_pushButton_pwd_clicked()
+{
+    ui->lineEdit_pwd->setEnabled(true);
+}
+
+void MainWindow::on_lineEdit_pwd_editingFinished()
+{
+    ui->lineEdit_pwd->setEnabled(false);
 }

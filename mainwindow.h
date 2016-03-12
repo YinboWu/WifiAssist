@@ -21,6 +21,14 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_pushButton_name_clicked();
+
+    void on_lineEdit_name_editingFinished();
+
+    void on_pushButton_pwd_clicked();
+
+    void on_lineEdit_pwd_editingFinished();
+
 private:
     Ui::MainWindow *ui;
 };

@@ -20,3 +20,8 @@ HEADERS  += mainwindow.h \
     wifi.h
 
 FORMS    += mainwindow.ui
+
+DISTFILES +=
+
+RESOURCES += \
+    icon.qrc
