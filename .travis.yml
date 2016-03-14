@@ -4,5 +4,5 @@ install:
 
 script:
   - qmake-qt4 -project
-  - qmake-qt4 hello.pro
+  - qmake-qt4 WifiAssist.pro
   - make

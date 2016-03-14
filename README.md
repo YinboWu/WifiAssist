@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lzjqsdd/WifiAssist.svg?branch=master)](https://travis-ci.org/lzjqsdd/WifiAssist)
+
 ## WifiAssit
   The easy way to use Wifi through PC.
 
