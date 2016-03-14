@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include "wifi.h"
+#include "wdevices.h"
+#include "wsettings.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +30,8 @@ private slots:
     void on_pushButton_pwd_clicked();
 
     void on_lineEdit_pwd_editingFinished();
+
+    void on_tabWidget_tabBarClicked(int index);
 
 private:
     Ui::MainWindow *ui;

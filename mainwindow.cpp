@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    wifi.stopWifi();
+//    wifi.stopWifi();
     delete ui;
 }
 
@@ -64,4 +64,13 @@ void MainWindow::on_pushButton_pwd_clicked()
 void MainWindow::on_lineEdit_pwd_editingFinished()
 {
     ui->lineEdit_pwd->setEnabled(false);
+}
+
+void MainWindow::on_tabWidget_tabBarClicked(int index)
+{
+    if(index == 0)
+    {
+        WDevices wd;
+        wd.getDevicesList();
+    }
 }

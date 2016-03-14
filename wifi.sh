@@ -5,10 +5,12 @@
 #    util-linux (for getopt)
 #    procps or procps-ng
 #    hostapd
+#    hostapd_cli
 #    iproute2
 #    iw
 #    iwconfig (you only need this if 'iw' can not recognize your adapter)
 #    haveged (optional)
+#    arp
 
 # dependencies for 'nat' or 'none' Internet sharing method
 #    dnsmasq
@@ -57,6 +59,7 @@ usage() {
     echo "                      you can put the PID of create_ap or the WiFi interface. You can"
     echo "                      get them with --list"
     echo "  --list              Show the create_ap processes that are already running"
+    echo "  --all-sta           Show the stations that connected to AP"
     echo
     echo "Non-Bridging Options:"
     echo "  -g <gateway>        IPv4 Gateway for the Access Point (default: 192.168.12.1)"
@@ -563,6 +566,7 @@ DAEMONIZE=0
 LIST_RUNNING=0
 STOP_ID=
 NO_HAVEGED=0
+ALL_STA=0
 
 CONFDIR=
 WIFI_IFACE=
@@ -745,7 +749,7 @@ send_stop() {
 }
 
 ARGS=( "$@" )
-GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","ieee80211n","ht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","daemon","stop:","list","version","no-haveged" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","ieee80211n","ht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","daemon","stop:","list","version","no-haveged","all-sta" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -846,12 +850,17 @@ while :; do
             shift
             NO_HAVEGED=1
             ;;
+	--all-sta)
+            shift
+	    ALL_STA=1
+	    ;;
         --)
             shift
             break
             ;;
     esac
 done
+
 
 if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && $LIST_RUNNING -eq 0 ]]; then
     usage >&2
@@ -869,6 +878,13 @@ fi
 trap "clean_exit" SIGINT SIGUSR1
 # if we get USR2 signal then run die().
 trap "die" SIGUSR2
+
+if [[ $ALL_STA -eq 1 ]]; then
+    mutex_lock
+    echo "Stations connect to AP list:"
+    mutex_unlock
+    exit 0
+fi
 
 if [[ $LIST_RUNNING -eq 1 ]]; then
     mutex_lock

@@ -14,10 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    wifi.cpp
+    wifi.cpp \
+    wsettings.cpp \
+    wdevices.cpp
 
 HEADERS  += mainwindow.h \
-    wifi.h
+    wifi.h \
+    wsettings.h \
+    wdevices.h
 
 FORMS    += mainwindow.ui
 

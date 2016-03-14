@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>img/edit.ico</file>
         <file>img/WifiAssist.ico</file>
+        <file>img/Settings.ico</file>
+        <file>img/Devices.ico</file>
     </qresource>
 </RCC>
