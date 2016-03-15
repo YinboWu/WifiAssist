@@ -726,6 +726,11 @@ list_running() {
     done
 }
 
+# show list of stations connected to AP
+list_sta() {
+	arp | grep eth0|awk -F ' ' '{print $1,$3}'
+}
+
 is_running_pid() {
     list_running | grep -E "^${1} " > /dev/null 2>&1
 }
@@ -749,7 +754,7 @@ send_stop() {
 }
 
 ARGS=( "$@" )
-GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","ieee80211n","ht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","daemon","stop:","list","version","no-haveged","all-sta" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","ieee80211n","ht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","daemon","stop:","list","all-sta","version","no-haveged" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -846,14 +851,14 @@ while :; do
             shift
             LIST_RUNNING=1
             ;;
+		--all-sta)
+            shift
+			ALL_STA=1
+	    	;;
         --no-haveged)
             shift
             NO_HAVEGED=1
             ;;
-	--all-sta)
-            shift
-	    ALL_STA=1
-	    ;;
         --)
             shift
             break
@@ -862,7 +867,7 @@ while :; do
 done
 
 
-if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && $LIST_RUNNING -eq 0 ]]; then
+if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && $LIST_RUNNING -eq 0 && $ALL_STA -eq 0 ]]; then
     usage >&2
     exit 1
 fi
@@ -879,17 +884,16 @@ trap "clean_exit" SIGINT SIGUSR1
 # if we get USR2 signal then run die().
 trap "die" SIGUSR2
 
-if [[ $ALL_STA -eq 1 ]]; then
-    mutex_lock
-    echo "Stations connect to AP list:"
-    mutex_unlock
-    exit 0
-fi
-
 if [[ $LIST_RUNNING -eq 1 ]]; then
     mutex_lock
     list_running
     mutex_unlock
+    exit 0
+fi
+
+if [[ $ALL_STA -eq 1 ]]; then
+    echo "Stations connect to AP list:"
+	list_sta
     exit 0
 fi
 
