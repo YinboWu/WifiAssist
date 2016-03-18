@@ -728,7 +728,18 @@ list_running() {
 
 # show list of stations connected to AP
 list_sta() {
-	arp | grep eth0|awk -F ' ' '{print $1,$3}'
+#	arp | grep eth0|awk -F ' ' '{print $1,$3}'
+#	hostapd_cli -p $CONFDIR/hostapd_ctrl all_sta | sed '1d' | awk 'NR%20==1'
+#	hostapd_cli
+#	echo $(`cat /tmp/wifipath`)
+#	hostapd_cli -p `cat /tmp/wifipath` | sed '1d' | awk 'NR%20==1'
+#	cat /tmp/wifipath | while read myline
+#	do 
+#		echo "LINE:"$myline
+#	done
+#	cat /tmp/wifipath | read line
+	read CONFDIR <<< $(cat /tmp/wifipath)
+	hostapd_cli -p $CONFDIR/hostapd_ctrl all_sta | sed '1d' | awk 'NR%20==1'
 }
 
 is_running_pid() {
@@ -892,7 +903,7 @@ if [[ $LIST_RUNNING -eq 1 ]]; then
 fi
 
 if [[ $ALL_STA -eq 1 ]]; then
-    echo "Stations connect to AP list:"
+#    echo "Stations connect to AP list:"
 	list_sta
     exit 0
 fi
@@ -1108,6 +1119,7 @@ CONFDIR=$(mktemp -d /tmp/create_ap.${WIFI_IFACE}.conf.XXXXXXXX)
 echo "Config dir: $CONFDIR"
 echo "PID: $$"
 echo $$ > $CONFDIR/pid
+echo $CONFDIR > /tmp/wifipath
 
 # to make --list work from any user, we must give read
 # permitions to $CONFDIR and $CONFDIR/pid

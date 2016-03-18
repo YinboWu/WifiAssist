@@ -68,9 +68,4 @@ void MainWindow::on_lineEdit_pwd_editingFinished()
 
 void MainWindow::on_tabWidget_tabBarClicked(int index)
 {
-    if(index == 0)
-    {
-        WDevices wd;
-        wd.getDevicesList();
-    }
 }

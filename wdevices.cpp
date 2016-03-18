@@ -1,19 +1,22 @@
 #include "wdevices.h"
-
+#include <QString>
+#include <QStringList>
+#include <QProcess>
 WDevices::WDevices()
 {
 
 }
 
-QStringList WDevices::getDevicesList()
+QString WDevices::getDevicesList()
 {
-    QProcess pingProcess;
-    QString exe = "arp";
-    pingProcess.start(exe);
-    pingProcess.waitForFinished();
-    QString output(pingProcess.readAll());
-
-
-     QMessageBox::warning(NULL,"Warning",output.trimmed());
+    QStringList args = QStringList() <<_path_exec<<"--all-sta";
+    if(!QProcess::startDetached("pkexec",args))
+   {
+        return "";
+    }
+    else
+    {
+        return "";
+    }
 }
 

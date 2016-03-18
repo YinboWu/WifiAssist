@@ -19,6 +19,7 @@ public:
 
     static QString getPassword();
     static QString setPassword(QString password);
+
 };
 
 #endif // WSETTINGS_H

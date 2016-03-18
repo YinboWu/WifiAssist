@@ -8,7 +8,14 @@ class WDevices
 {
 public:
     WDevices();
-    QStringList getDevicesList();
+    QString getDevicesList();
+
+    QString _path_exec;
+    QString _APName;
+    QString _Password;
+    QString _Interface_Create;
+    QString _Interface_Shared;
+    QString _AccessPoint;
 };
 
 #endif // WDEVICES_H
