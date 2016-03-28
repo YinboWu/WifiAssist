@@ -29,4 +29,3 @@ DISTFILES +=
 
 RESOURCES += \
     icon.qrc
-

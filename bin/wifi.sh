@@ -602,6 +602,7 @@ _cleanup() {
         fi
     done
     rm -rf $CONFDIR
+	rm -rf /tmp/wifipath
 
     if [[ "$SHARE_METHOD" != "none" ]]; then
         if [[ "$SHARE_METHOD" == "nat" ]]; then

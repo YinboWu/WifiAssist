@@ -6,12 +6,14 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QDebug>
-
+#include "wsettings.h"
 
 class Wifi
 {
 public:
     Wifi();
+
+    WSettings m_settings;
 
     QString _path_exec;
     QString _APName;

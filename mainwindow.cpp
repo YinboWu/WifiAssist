@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_name->setText(wifi.APName());
     ui->lineEdit_pwd ->setText(wifi.Password());
 
+    ui->lineEdit_ap->setText(settings.AccessPoint());
+
     wifi.setPath_exec(QDir::currentPath()+"/wifi.sh");
 }
 
@@ -67,5 +69,9 @@ void MainWindow::on_lineEdit_pwd_editingFinished()
 }
 
 void MainWindow::on_tabWidget_tabBarClicked(int index)
+{
+}
+
+void MainWindow::on_pushButton_save_clicked()
 {
 }

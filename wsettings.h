@@ -1,7 +1,7 @@
 #ifndef WSETTINGS_H
 #define WSETTINGS_H
 #include "QString"
-
+#include <QSettings>
 /**
  * @brief The WSettings class
  *
@@ -10,16 +10,32 @@ class WSettings
 {
 public:
     WSettings();
+    ~WSettings();
 
-    static QString getAPName();
-    static QString setAPName(QString apname);
+    QSettings *m_settings;
 
-    static QString getAccessPoint();
-    static QString setAccessPoint(QString accesspoint);
+    QString _path_exec;
+    QString _APName;
+    QString _Password;
+    QString _Interface_Create;
+    QString _Interface_Shared;
+    QString _AccessPoint;
 
-    static QString getPassword();
-    static QString setPassword(QString password);
+    QString path_exec() const;
+    void setPath_exec(const QString &path_exec);
+    QString APName() const;
+    void setAPName(const QString &APName);
+    QString Password() const;
+    void setPassword(const QString &Password);
+    QString Interface_Create() const;
+    void setInterface_Create(const QString &Interface_Create);
+    QString Interface_Shared() const;
+    void setInterface_Shared(const QString &Interface_Shared);
+    QString AccessPoint() const;
+    void setAccessPoint(const QString &AccessPoint);
 
+    void setSettings(const QString &name,const QString &value);
+    QString getSettings(const QString&name) const;
 };
 
 #endif // WSETTINGS_H

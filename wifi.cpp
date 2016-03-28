@@ -2,11 +2,11 @@
 
 Wifi::Wifi()
 {
-    setAccessPoint("192.168.13.1");
-    setAPName("WifiAssistForLinux");
-    setInterface_Create("wlan0");
-    setInterface_Shared("eth0");
-    setPassword("1234567890");
+    m_settings.setAccessPoint("192.168.13.1");
+    m_settings.setAPName("WifiAssistForLinux");
+    m_settings.setInterface_Create("wlan0");
+    m_settings.setInterface_Shared("eth0");
+    m_settings.setPassword("1234567890");
 //    setPath_exec("/home/lzjqsdd/github/create_ap/create_ap");
 }
 

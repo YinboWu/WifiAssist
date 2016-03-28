@@ -18,6 +18,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Wifi wifi;
+    WSettings settings;
     QString path;
 
 private slots:
@@ -32,6 +33,8 @@ private slots:
     void on_lineEdit_pwd_editingFinished();
 
     void on_tabWidget_tabBarClicked(int index);
+
+    void on_pushButton_save_clicked();
 
 private:
     Ui::MainWindow *ui;
