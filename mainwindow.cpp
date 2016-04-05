@@ -5,26 +5,22 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QDebug>
+#include <wsettings.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //ui->textEdit_name->setText(wifi.APName());
-    //ui->textEdit_pwd ->setText(wifi.Password());
 
-    ui->lineEdit_name->setText(wifi.APName());
-    ui->lineEdit_pwd ->setText(wifi.Password());
-
-    ui->lineEdit_ap->setText(settings.AccessPoint());
-
-    wifi.setPath_exec(QDir::currentPath()+"/wifi.sh");
+    ui->tabWidget->setCurrentIndex(0);
+    ui->lineEdit_name->setText(m_wsettings.APName());
+    ui->lineEdit_pwd ->setText(m_wsettings.Password());
+    ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
 }
 
 MainWindow::~MainWindow()
 {
-//    wifi.stopWifi();
     delete ui;
 }
 
@@ -74,4 +70,15 @@ void MainWindow::on_tabWidget_tabBarClicked(int index)
 
 void MainWindow::on_pushButton_save_clicked()
 {
+    WSettings m_setting;
+    QString apoint = this->ui->lineEdit_ap->text();
+    if(apoint.size()!=0)
+    {
+        m_setting.setAccessPoint(apoint);
+        QMessageBox::information(this,"settings","Apply Success!",QMessageBox::Ok);
+    }
+    else
+    {
+             QMessageBox::information(this,"settings","Access Point Can't Be Empty!",QMessageBox::Ok);
+    }
 }

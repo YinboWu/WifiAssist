@@ -18,7 +18,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     Wifi wifi;
-    WSettings settings;
+    WSettings m_wsettings;
     QString path;
 
 private slots:

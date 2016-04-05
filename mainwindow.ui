@@ -341,7 +341,7 @@ border-width:0px</string>
      </attribute>
      <widget class="QLineEdit" name="lineEdit_ap">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -381,65 +381,6 @@ padding: 1px 2px 1px 2px;</string>
        <string>dhcpAddr</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_interface1">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>100</y>
-        <width>67</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>wlan</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_interface2">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>160</y>
-        <width>67</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>IFShare</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="comboBox">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>90</y>
-        <width>121</width>
-        <height>30</height>
-       </rect>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 1.5px solid #000000;
-border-radius: 5px;
-padding: 1px 2px 1px 2px;</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="comboBox_2">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>150</y>
-        <width>120</width>
-        <height>30</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">border: 1.5px solid #000000;
-border-radius: 5px;
-padding: 1px 2px 1px 2px;</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pushButton_save">
       <property name="geometry">
        <rect>
@@ -467,13 +408,6 @@ border-width:px
        <string>SAVE</string>
       </property>
      </widget>
-     <zorder>lineEdit_ap</zorder>
-     <zorder>comboBox</zorder>
-     <zorder>label_interface1</zorder>
-     <zorder>label_ap</zorder>
-     <zorder>comboBox_2</zorder>
-     <zorder>label_interface2</zorder>
-     <zorder>pushButton_save</zorder>
     </widget>
    </widget>
   </widget>
