@@ -12,7 +12,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     ui->tabWidget->setCurrentIndex(0);
     ui->lineEdit_name->setText(m_wsettings.APName());
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
@@ -21,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    wifi.stopWifi();
     delete ui;
 }
 

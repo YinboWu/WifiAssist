@@ -2,7 +2,7 @@
 
 WSettings::WSettings()
 {
-       m_settings = new QSettings("config.ini",QSettings::IniFormat);
+       m_settings = new QSettings("etc/config.ini",QSettings::IniFormat);
        _path_exec = "PATH";
        _APName = "APNAME";
        _Password = "PASSWORD";
