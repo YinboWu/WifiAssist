@@ -3,6 +3,17 @@
 ## WifiAssit
   The easy way to use Wifi through PC.
 
+## Install
+  ```shell
+  git clone https://github.com/lzjqsdd/WifiAssist.git
+  cd WifiAssist`
+  sudo ./install.sh
+  ```
+  Then edit config.ini,set PATH="/bin/wifi"
+## Uninstall
+  ```shell
+  ./uninstall.sh
+  ```
 ## Snapshot
 ![WifiAssit_init](https://github.com/lzjqsdd/WifiAssist/blob/master/img/WifiAssistForLinux.png)
 
