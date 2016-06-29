@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_name->setText(m_wsettings.APName());
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
     ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
+    ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
 }
 
 MainWindow::~MainWindow()

@@ -12,13 +12,13 @@
 
 ## ~~Install~~
 
-暂时无法安装，请使用INSTALL里面直接调用。
   ```shell
   git clone https://github.com/lzjqsdd/WifiAssist.git
   cd WifiAssist`
   sudo ./install.sh
   ```
-  Then edit config.ini,set PATH="/bin/wifi"
+然后终端执行sudo WifiAssist
+
 ## ~~Uninstall~~
   ```shell
   ./uninstall.sh

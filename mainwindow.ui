@@ -33,6 +33,10 @@
   <property name="windowTitle">
    <string>WifiAssist</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="icon.qrc">
+    <normaloff>:/img/WifiAssist.ico</normaloff>:/img/WifiAssist.ico</iconset>
+  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
@@ -86,7 +90,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <property name="tabBarAutoHide">
      <bool>false</bool>
@@ -362,6 +366,48 @@ border-width:px
       </property>
       <property name="text">
        <string>SAVE</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_shareinterface">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>90</y>
+        <width>67</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>interface</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_shareinterface">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>80</y>
+        <width>120</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 1.0px solid #000000;
+border-radius: 5px;
+padding: 1px 2px 1px 2px;</string>
+      </property>
+      <property name="readOnly">
+       <bool>false</bool>
       </property>
      </widget>
     </widget>
