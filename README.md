@@ -7,10 +7,11 @@
 ## TODOLIST
 - [x] 简单开启并关闭wifi
 - [x] 增加接入点设置、wifi名称、密码设置
-- [ ] 增加接入设备显示
+- [ ] 系统托盘控制
+- [ ] 增加接入设备显示(version2.0加入)
 - [ ] 接入设备限速控制、踢人
 
-## ~~Install~~
+## Install
 
   ```shell
   git clone https://github.com/lzjqsdd/WifiAssist.git
@@ -19,7 +20,7 @@
   ```
 然后终端执行sudo WifiAssist
 
-## ~~Uninstall~~
+## Uninstall
   ```shell
   ./uninstall.sh
   ```
