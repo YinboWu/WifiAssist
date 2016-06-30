@@ -17,12 +17,38 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
     ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
     ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
+
+    this->createSystemTrayMenu();
+
 }
 
 MainWindow::~MainWindow()
 {
     wifi.stopWifi();
     delete ui;
+}
+
+void MainWindow::createSystemTrayMenu()
+{
+    //Check if System Support SystemTrayIcon.
+    //Linux:X11
+    if(QSystemTrayIcon::isSystemTrayAvailable())
+    {
+
+        m_trayIcon.setIcon(QIcon("img/WifiAssit.ico"));
+        m_trayIcon.setToolTip((tr("WifiAssist Running...")));
+        QString titlec=tr("WifiAssist Info");
+        QString textc=tr("Click For Detaili Options");
+        m_trayIcon.show();
+
+        //弹出气泡提示
+        m_trayIcon.showMessage(titlec,textc,QSystemTrayIcon::Information,5000);
+
+        QMenu m_menu;
+        m_menu.addAction("StartWifi");
+        m_menu.addAction("StopWifi");
+        m_trayIcon.setContextMenu(&m_menu);
+     }
 }
 
 void MainWindow::on_pushButton_clicked()

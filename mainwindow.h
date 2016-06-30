@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
+#include <QMenu>
 #include "wifi.h"
 #include "wdevices.h"
 #include "wsettings.h"
@@ -38,6 +40,11 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    QSystemTrayIcon m_trayIcon;
+
+    void createSystemTrayMenu(); //create customize menu
+
+
 };
 
 #endif // MAINWINDOW_H
