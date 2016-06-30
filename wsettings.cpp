@@ -2,13 +2,16 @@
 
 WSettings::WSettings()
 {
-       m_settings = new QSettings("etc/config.ini",QSettings::IniFormat);
+       //m_settings = new QSettings("etc/config.ini",QSettings::IniFormat);
+
        _path_exec = "PATH";
        _APName = "APNAME";
        _Password = "PASSWORD";
        _Interface_Create = "INTERFACE_CREATED";
        _Interface_Shared = "INTERFACE_SHARED";
        _AccessPoint = "ACCESSPOINT";
+
+       checkConfigFile();
 }
 
 WSettings::~WSettings()
@@ -88,5 +91,44 @@ void WSettings::setPath_exec(const QString &path_exec)
     this->setSettings(this->_path_exec,path_exec);
 }
 
+void WSettings::checkConfigFile()
+{
+    //default config file "~/.WifiAssist/config.ini"
+    //check is path exists
+    QDir dir;
+    QString config_path = dir.homePath()+"/.WifiAssist";
+    QString filename = config_path+"/config.ini";
+    dir.setPath(config_path);
+
+
+    //if not exist,mkdir and Then set default config file.
+    if(!dir.exists())
+    {
+        dir.mkdir(config_path);
+    }
+
+    QFile file;
+    file.setFileName(filename);
+    if(!file.exists())
+    {
+        m_settings = new QSettings(filename,QSettings::IniFormat);
+        setDefaultConfig();
+    }
+    else
+        m_settings = new QSettings(filename,QSettings::IniFormat);
+}
+
+void WSettings::setDefaultConfig()
+{
+    this->setPassword("1234567890");
+    this->setAccessPoint("192.168.12.1");
+    this->setAPName("WifiAssistForLinux");
+    this->setInterface_Create("wlan0");
+    this->setInterface_Shared("eth0");
+
+    QString absolute_path = QCoreApplication::applicationDirPath()+"/bin/wifi.sh";
+
+    this->setPath_exec(absolute_path);
+}
 
 

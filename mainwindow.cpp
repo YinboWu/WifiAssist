@@ -6,6 +6,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <wsettings.h>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
 
     this->createSystemTrayMenu();
-
 }
 
 MainWindow::~MainWindow()

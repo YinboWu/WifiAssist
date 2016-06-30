@@ -1,7 +1,10 @@
 #ifndef WSETTINGS_H
 #define WSETTINGS_H
 #include "QString"
+#include <QDir>
 #include <QSettings>
+#include <QMessageBox>
+#include <QCoreApplication>
 /**
  * @brief The WSettings class
  *
@@ -36,6 +39,9 @@ public:
 
     void setSettings(const QString &name,const QString &value);
     QString getSettings(const QString&name) const;
+
+    void checkConfigFile();
+    void setDefaultConfig();
 };
 
 #endif // WSETTINGS_H
