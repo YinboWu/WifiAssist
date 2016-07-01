@@ -14,12 +14,15 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
+
+    //init UI information
     ui->lineEdit_name->setText(m_wsettings.APName());
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
     ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
     ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
 
-    this->createSystemTrayMenu();
+    //create SystemTrayIcon Control
+   // this->createSystemTrayMenu();
 }
 
 MainWindow::~MainWindow()
@@ -39,15 +42,15 @@ void MainWindow::createSystemTrayMenu()
         m_trayIcon.setToolTip((tr("WifiAssist Running...")));
         QString titlec=tr("WifiAssist Info");
         QString textc=tr("Click For Detaili Options");
-        m_trayIcon.show();
-
         //弹出气泡提示
-        m_trayIcon.showMessage(titlec,textc,QSystemTrayIcon::Information,5000);
+        //m_trayIcon.showMessage(titlec,textc,QSystemTrayIcon::Information,5000);
 
         QMenu m_menu;
         m_menu.addAction("StartWifi");
         m_menu.addAction("StopWifi");
         m_trayIcon.setContextMenu(&m_menu);
+
+        m_trayIcon.show();
      }
 }
 

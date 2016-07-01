@@ -40,6 +40,8 @@ public:
     void setSettings(const QString &name,const QString &value);
     QString getSettings(const QString&name) const;
 
+    void setConfigAttrName();
+
     void checkConfigFile();
     void setDefaultConfig();
 };

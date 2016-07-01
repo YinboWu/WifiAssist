@@ -1,22 +1,24 @@
 #include "wsettings.h"
 
 WSettings::WSettings()
-{
-       //m_settings = new QSettings("etc/config.ini",QSettings::IniFormat);
-
-       _path_exec = "PATH";
-       _APName = "APNAME";
-       _Password = "PASSWORD";
-       _Interface_Create = "INTERFACE_CREATED";
-       _Interface_Shared = "INTERFACE_SHARED";
-       _AccessPoint = "ACCESSPOINT";
-
+{        
+       setConfigAttrName();
        checkConfigFile();
 }
 
 WSettings::~WSettings()
 {
     delete this->m_settings;
+}
+
+void WSettings::setConfigAttrName()
+{
+    _path_exec = "PATH";
+    _APName = "APNAME";
+    _Password = "PASSWORD";
+    _Interface_Create = "INTERFACE_CREATED";
+    _Interface_Shared = "INTERFACE_SHARED";
+    _AccessPoint = "ACCESSPOINT";
 }
 
 void WSettings::setSettings(const QString &name,const QString &value)
@@ -127,7 +129,6 @@ void WSettings::setDefaultConfig()
     this->setInterface_Shared("eth0");
 
     QString absolute_path = QCoreApplication::applicationDirPath()+"/bin/wifi.sh";
-
     this->setPath_exec(absolute_path);
 }
 
