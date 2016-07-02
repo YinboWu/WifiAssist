@@ -100,9 +100,18 @@ void MainWindow::on_pushButton_name_clicked()
 
 void MainWindow::on_lineEdit_name_editingFinished()
 {
+    //if config not changed,return
+    if(ui->lineEdit_name->text() == m_setting.APName())
+        return;
+
     ui->lineEdit_name->setEnabled(false);
     m_setting.setAPName(ui->lineEdit_name->text());
-    wifi.restartWifi();
+    if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+    {
+        ui->pushButton->setText("Restaring...");
+        wifi.restartWifi();
+        ui->pushButton->setText("STOP");
+    }
 }
 
 void MainWindow::on_pushButton_pwd_clicked()
@@ -112,9 +121,18 @@ void MainWindow::on_pushButton_pwd_clicked()
 
 void MainWindow::on_lineEdit_pwd_editingFinished()
 {
+    if(ui->lineEdit_pwd->text() == m_setting.Password())
+        return;
+
+
     ui->lineEdit_pwd->setEnabled(false);
     m_setting.setPassword(ui->lineEdit_pwd->text());
-    wifi.restartWifi();
+    if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+    {
+        ui->pushButton->setText("Restaring...");
+        wifi.restartWifi();
+        ui->pushButton->setText("STOP");
+    }
 }
 
 void MainWindow::on_tabWidget_tabBarClicked(int index)

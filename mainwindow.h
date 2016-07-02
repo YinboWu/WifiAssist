@@ -38,6 +38,10 @@ private slots:
 
     void on_pushButton_save_clicked();
 
+    void on_lineEdit_name_textChanged(const QString &arg1);
+
+    void on_lineEdit_name_returnPressed();
+
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon m_trayIcon;

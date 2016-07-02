@@ -51,8 +51,8 @@ void Wifi::restartWifi()
     stopWifi();
     QElapsedTimer t;
     t.start();
-    while(t.elapsed()<1000)
-    QCoreApplication::processEvents();
+    while(t.elapsed()<5000)
+        QCoreApplication::processEvents();
     startWifi();
 }
 
