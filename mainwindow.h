@@ -43,7 +43,10 @@ private:
     QSystemTrayIcon m_trayIcon;
 
     void createSystemTrayMenu(); //create customize menu
+    void initUILanguageShow();
+    void initUIValue();
 
+    WSettings m_setting;
 
 };
 

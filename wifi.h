@@ -7,6 +7,7 @@
 #include <QProcess>
 #include <QDebug>
 #include "wsettings.h"
+#include <QElapsedTimer>
 
 class Wifi
 {
@@ -16,6 +17,8 @@ public:
     bool stopWifi();
     void useWPA1();
     void useWPA2();
+
+    void restartWifi();
 };
 
 #endif // WIFI_H

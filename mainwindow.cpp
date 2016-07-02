@@ -15,11 +15,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
 
+    //initUILanguage
+    initUILanguageShow();
+
     //init UI information
-    ui->lineEdit_name->setText(m_wsettings.APName());
-    ui->lineEdit_pwd ->setText(m_wsettings.Password());
-    ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
-    ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
+    initUIValue();
 
     //create SystemTrayIcon Control
    // this->createSystemTrayMenu();
@@ -29,6 +29,25 @@ MainWindow::~MainWindow()
 {
     wifi.stopWifi();
     delete ui;
+}
+
+void MainWindow::initUIValue()
+{
+    ui->lineEdit_name->setText(m_wsettings.APName());
+    ui->lineEdit_pwd ->setText(m_wsettings.Password());
+    ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
+    ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
+    ui->lineEdit_createdinterface->setText(m_wsettings.Interface_Create());
+}
+
+void MainWindow::initUILanguageShow()
+{
+    //default language:zh_CN
+    ui->label_ap->setText("接入点");
+    ui->label_name->setText("名称");
+    ui->label_pwd->setText("密码");
+    ui->label_shareinterface->setText("共享网卡");
+    ui->label_createdinterface->setText("热点网卡");
 }
 
 void MainWindow::createSystemTrayMenu()
@@ -82,6 +101,8 @@ void MainWindow::on_pushButton_name_clicked()
 void MainWindow::on_lineEdit_name_editingFinished()
 {
     ui->lineEdit_name->setEnabled(false);
+    m_setting.setAPName(ui->lineEdit_name->text());
+    wifi.restartWifi();
 }
 
 void MainWindow::on_pushButton_pwd_clicked()
@@ -92,6 +113,8 @@ void MainWindow::on_pushButton_pwd_clicked()
 void MainWindow::on_lineEdit_pwd_editingFinished()
 {
     ui->lineEdit_pwd->setEnabled(false);
+    m_setting.setPassword(ui->lineEdit_pwd->text());
+    wifi.restartWifi();
 }
 
 void MainWindow::on_tabWidget_tabBarClicked(int index)
@@ -100,7 +123,6 @@ void MainWindow::on_tabWidget_tabBarClicked(int index)
 
 void MainWindow::on_pushButton_save_clicked()
 {
-    WSettings m_setting;
     QString apoint = this->ui->lineEdit_ap->text();
     if(apoint.size()!=0)
     {
