@@ -36,8 +36,14 @@ void MainWindow::initUIValue()
     ui->lineEdit_name->setText(m_wsettings.APName());
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
     ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
-    ui->lineEdit_shareinterface->setText(m_wsettings.Interface_Shared());
-    ui->lineEdit_createdinterface->setText(m_wsettings.Interface_Create());
+
+    //get interface list
+    QStringList interface_list = m_wsettings.getInterfaceList();
+    ui->comboBox_createdinterface->addItems(interface_list);
+    ui->comboBox_shareinterface->addItems(interface_list);
+
+    ui->comboBox_createdinterface->setCurrentText(m_wsettings.Interface_Create());
+    ui->comboBox_shareinterface->setCurrentText(m_wsettings.Interface_Shared());
 }
 
 void MainWindow::initUILanguageShow()
@@ -101,11 +107,11 @@ void MainWindow::on_pushButton_name_clicked()
 void MainWindow::on_lineEdit_name_editingFinished()
 {
     //if config not changed,return
-    if(ui->lineEdit_name->text() == m_setting.APName())
+    if(ui->lineEdit_name->text() == m_wsettings.APName())
         return;
 
     ui->lineEdit_name->setEnabled(false);
-    m_setting.setAPName(ui->lineEdit_name->text());
+    m_wsettings.setAPName(ui->lineEdit_name->text());
     if(QString::compare(ui->pushButton->text(),"STOP") == 0)
     {
         ui->pushButton->setText("Restaring...");
@@ -121,12 +127,12 @@ void MainWindow::on_pushButton_pwd_clicked()
 
 void MainWindow::on_lineEdit_pwd_editingFinished()
 {
-    if(ui->lineEdit_pwd->text() == m_setting.Password())
+    if(ui->lineEdit_pwd->text() == m_wsettings.Password())
         return;
 
 
     ui->lineEdit_pwd->setEnabled(false);
-    m_setting.setPassword(ui->lineEdit_pwd->text());
+    m_wsettings.setPassword(ui->lineEdit_pwd->text());
     if(QString::compare(ui->pushButton->text(),"STOP") == 0)
     {
         ui->pushButton->setText("Restaring...");
@@ -142,13 +148,54 @@ void MainWindow::on_tabWidget_tabBarClicked(int index)
 void MainWindow::on_pushButton_save_clicked()
 {
     QString apoint = this->ui->lineEdit_ap->text();
-    if(apoint.size()!=0)
+    QString interface_created = this->ui->comboBox_createdinterface->currentText();
+    QString interface_shared = this->ui->comboBox_shareinterface->currentText();
+    if(apoint.size() == 0)
     {
-        m_setting.setAccessPoint(apoint);
-        QMessageBox::information(this,"settings","Apply Success!",QMessageBox::Ok);
+        QMessageBox::information(this,"Settings","Access Point Can't Be Empty!",QMessageBox::Ok);
+        return;
     }
-    else
+    if(interface_created.size() == 0)
     {
-             QMessageBox::information(this,"settings","Access Point Can't Be Empty!",QMessageBox::Ok);
+        QMessageBox::information(this,"settings","Wifi Interface Can't Be Empty!",QMessageBox::Ok);
+        return;
     }
+    if(interface_shared.size() == 0)
+    {
+        QMessageBox::information(this,"settings","Shared Interface Can't Be Empty!",QMessageBox::Ok);
+        return;
+    }
+
+    if(!interface_created.startsWith("wl"))
+    {
+        QMessageBox::StandardButton stdbtn = QMessageBox::warning(NULL,"Settings",
+                                 "This Wifi Interface May not work,Still Use it?",
+                                 QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
+        if(stdbtn == QMessageBox::No)
+            return;
+    }
+    if(!(interface_shared.contains("eth") || interface_shared.contains("en")))
+    {
+        QMessageBox::StandardButton stdbtn = QMessageBox::warning(NULL,"Settings",
+                                "This Shared Interface May not work,Still Use it?",
+                                QMessageBox::Yes|QMessageBox::No,QMessageBox::Yes);
+        if(stdbtn == QMessageBox::No)
+            return;
+    }
+
+    m_wsettings.setAccessPoint(apoint);
+    m_wsettings.setInterface_Create(interface_created);
+    m_wsettings.setInterface_Shared(interface_shared);
+    QMessageBox::information(this,"Settings","Apply Success!",QMessageBox::Ok);
+
+}
+
+void MainWindow::on_lineEdit_name_returnPressed()
+{
+
+}
+
+void MainWindow::on_lineEdit_name_textChanged(const QString &arg1)
+{
+
 }

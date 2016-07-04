@@ -1,8 +1,11 @@
 #include "wsettings.h"
+#include <QProcess>
+#include <QTextStream>
 
 WSettings::WSettings()
 {        
        setConfigAttrName();
+       checkInterfaceListFile();
        checkConfigFile();
 }
 
@@ -19,6 +22,7 @@ void WSettings::setConfigAttrName()
     _Interface_Create = "INTERFACE_CREATED";
     _Interface_Shared = "INTERFACE_SHARED";
     _AccessPoint = "ACCESSPOINT";
+    _Language = "LANGUAGE";
 }
 
 void WSettings::setSettings(const QString &name,const QString &value)
@@ -93,6 +97,46 @@ void WSettings::setPath_exec(const QString &path_exec)
     this->setSettings(this->_path_exec,path_exec);
 }
 
+QString WSettings::Language() const
+{
+    return this->getSettings(this->_Language);
+}
+
+void WSettings::setLanguage(const QString &Language)
+{
+    this->setSettings(this->_Language,Language);
+}
+
+
+void WSettings::checkInterfaceListFile()
+{
+    //default config file "~/.WifiAssist/config.ini"
+    //check is path exists
+    QDir dir;
+    QString config_path = dir.homePath()+"/.WifiAssist";
+    //run net.sh to get interface list
+    QString interface_list_filename = config_path+"/interface.list";
+    QFile file;
+    file.setFileName(interface_list_filename);
+
+    if(!file.exists())
+    {
+        QStringList args = QStringList() << QCoreApplication::applicationDirPath()+"/bin/net.sh";
+        QProcess qp;
+        if(!qp.startDetached("bash",args))
+        {
+            QMessageBox::about(NULL,"Warning!","Can't Get Interface List");
+        }
+
+        QElapsedTimer t;
+        t.start();
+        while(t.elapsed()<1000)
+            QCoreApplication::processEvents();
+    }
+
+}
+
+
 void WSettings::checkConfigFile()
 {
     //default config file "~/.WifiAssist/config.ini"
@@ -101,8 +145,6 @@ void WSettings::checkConfigFile()
     QString config_path = dir.homePath()+"/.WifiAssist";
     QString filename = config_path+"/config.ini";
     dir.setPath(config_path);
-
-
     //if not exist,mkdir and Then set default config file.
     if(!dir.exists())
     {
@@ -125,11 +167,46 @@ void WSettings::setDefaultConfig()
     this->setPassword("1234567890");
     this->setAccessPoint("192.168.12.1");
     this->setAPName("WifiAssistForLinux");
-    this->setInterface_Create("wlan0");
-    this->setInterface_Shared("eth0");
+
+    QStringList interface_list = getInterfaceList();
+    if(interface_list.contains("eth0"))
+        this->setInterface_Shared("eth0");
+    else
+        this->setInterface_Shared(*interface_list.begin());
+
+    if(interface_list.contains("wlan0"))
+        this->setInterface_Create("wlan0");
+    else
+        this->setInterface_Create(*interface_list.end());
 
     QString absolute_path = QCoreApplication::applicationDirPath()+"/bin/wifi.sh";
     this->setPath_exec(absolute_path);
 }
 
+QStringList WSettings::getInterfaceList()
+{
+    //read interface.list
+    QDir dir;
+    QString config_path = dir.homePath()+"/.WifiAssist";
+    QString interface_list_filename = config_path+"/interface.list";
+
+    QStringList interface_list = QStringList();
+
+    QFile inputFile(interface_list_filename);
+    if(inputFile.open(QIODevice::ReadOnly))
+    {
+       QTextStream in(&inputFile);
+       while (!in.atEnd())
+       {
+          QString line = in.readLine();
+          interface_list << line;
+       }
+       inputFile.close();
+    }
+    else
+    {
+        QMessageBox::warning(NULL,"Warning","Can't find interface Record");
+    }
+    return interface_list;
+}
 

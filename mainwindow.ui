@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>260</width>
-    <height>403</height>
+    <height>398</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -90,7 +90,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="tabBarAutoHide">
      <bool>false</bool>
@@ -311,7 +311,7 @@ border-width:0px</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>120</x>
         <y>30</y>
         <width>120</width>
         <height>30</height>
@@ -337,14 +337,17 @@ padding: 1px 2px 1px 2px;</string>
      <widget class="QLabel" name="label_ap">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>6</x>
         <y>40</y>
-        <width>67</width>
-        <height>17</height>
+        <width>111</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>dhcpAddr</string>
+       <string>AccessPoint</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_save">
@@ -374,88 +377,66 @@ border-width:px
        <string>SAVE</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_shareinterface">
+     <widget class="QLabel" name="label_createdinterface">
       <property name="geometry">
        <rect>
-        <x>30</x>
+        <x>6</x>
         <y>90</y>
-        <width>67</width>
-        <height>17</height>
+        <width>111</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="text">
-       <string>interface</string>
+       <string>WifiInterface</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_shareinterface">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QLabel" name="label_shareinterface">
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>6</x>
+        <y>140</y>
+        <width>111</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SharedInterface</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_createdinterface">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
         <y>80</y>
         <width>120</width>
         <height>30</height>
        </rect>
       </property>
-      <property name="font">
-       <font>
-        <pointsize>9</pointsize>
-       </font>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
       <property name="styleSheet">
        <string notr="true">border: 1.0px solid #000000;
 border-radius: 5px;
 padding: 1px 2px 1px 2px;</string>
       </property>
-      <property name="readOnly">
-       <bool>false</bool>
-      </property>
      </widget>
-     <widget class="QLineEdit" name="lineEdit_createdinterface">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
+     <widget class="QComboBox" name="comboBox_shareinterface">
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>120</x>
         <y>130</y>
         <width>120</width>
         <height>30</height>
        </rect>
       </property>
-      <property name="font">
-       <font>
-        <pointsize>9</pointsize>
-       </font>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::ClickFocus</enum>
-      </property>
       <property name="styleSheet">
        <string notr="true">border: 1.0px solid #000000;
 border-radius: 5px;
 padding: 1px 2px 1px 2px;</string>
-      </property>
-      <property name="readOnly">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_createdinterface">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>140</y>
-        <width>67</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>interface</string>
       </property>
      </widget>
     </widget>

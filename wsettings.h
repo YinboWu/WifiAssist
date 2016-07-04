@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 /**
  * @brief The WSettings class
  *
@@ -23,6 +24,7 @@ public:
     QString _Interface_Create;
     QString _Interface_Shared;
     QString _AccessPoint;
+    QString _Language;
 
     QString path_exec() const;
     void setPath_exec(const QString &path_exec);
@@ -36,14 +38,19 @@ public:
     void setInterface_Shared(const QString &Interface_Shared);
     QString AccessPoint() const;
     void setAccessPoint(const QString &AccessPoint);
+    QString Language() const;
+    void setLanguage(const QString &Language);
 
     void setSettings(const QString &name,const QString &value);
     QString getSettings(const QString&name) const;
 
     void setConfigAttrName();
 
+    void checkInterfaceListFile();
     void checkConfigFile();
     void setDefaultConfig();
+    QStringList getInterfaceList();
 };
 
 #endif // WSETTINGS_H
+

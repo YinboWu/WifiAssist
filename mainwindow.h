@@ -50,8 +50,6 @@ private:
     void initUILanguageShow();
     void initUIValue();
 
-    WSettings m_setting;
-
 };
 
 #endif // MAINWINDOW_H
