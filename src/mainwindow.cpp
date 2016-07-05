@@ -5,7 +5,7 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QDebug>
-#include <wsettings.h>
+#include <src/wsettings.h>
 #include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -49,11 +49,14 @@ void MainWindow::initUIValue()
 void MainWindow::initUILanguageShow()
 {
     //default language:zh_CN
-    ui->label_ap->setText("接入点");
-    ui->label_name->setText("名称");
-    ui->label_pwd->setText("密码");
-    ui->label_shareinterface->setText("共享网卡");
-    ui->label_createdinterface->setText("热点网卡");
+    if(m_wsettings.Language() == "zh_CN")
+    {
+        ui->label_ap->setText("接入点");
+        ui->label_name->setText("名称");
+        ui->label_pwd->setText("密码");
+        ui->label_shareinterface->setText("共享网卡");
+        ui->label_createdinterface->setText("热点网卡");
+    }
 }
 
 void MainWindow::createSystemTrayMenu()
@@ -174,7 +177,7 @@ void MainWindow::on_pushButton_save_clicked()
         if(stdbtn == QMessageBox::No)
             return;
     }
-    if(!(interface_shared.contains("eth") || interface_shared.contains("en")))
+    if(!(interface_shared.contains("eth") || interface_shared.contains("en")) || interface_shared.contains("wl"))
     {
         QMessageBox::StandardButton stdbtn = QMessageBox::warning(NULL,"Settings",
                                 "This Shared Interface May not work,Still Use it?",
@@ -187,15 +190,5 @@ void MainWindow::on_pushButton_save_clicked()
     m_wsettings.setInterface_Create(interface_created);
     m_wsettings.setInterface_Shared(interface_shared);
     QMessageBox::information(this,"Settings","Apply Success!",QMessageBox::Ok);
-
-}
-
-void MainWindow::on_lineEdit_name_returnPressed()
-{
-
-}
-
-void MainWindow::on_lineEdit_name_textChanged(const QString &arg1)
-{
 
 }

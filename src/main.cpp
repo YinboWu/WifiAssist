@@ -7,6 +7,5 @@ int main(int argc, char *argv[])
     a.setWindowIcon(QIcon("img/WifiAssit.ico"));
     MainWindow w;
     w.show();
-
     return a.exec();
 }

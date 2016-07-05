@@ -8,24 +8,25 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = WifiAssist
+TARGET = INSTALL/WifiAssist
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    wifi.cpp \
-    wsettings.cpp \
-    wdevices.cpp
+SOURCES += src/main.cpp\
+        src/mainwindow.cpp \
+    src/wifi.cpp \
+    src/wsettings.cpp \
+    src/wdevices.cpp
 
-HEADERS  += mainwindow.h \
-    wifi.h \
-    wsettings.h \
-    wdevices.h
+HEADERS  += src/mainwindow.h \
+    src/wifi.h \
+    src/wsettings.h \
+    src/wdevices.h
+    src/ui_mainwindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += src/mainwindow.ui
 
 DISTFILES +=
 
 RESOURCES += \
-    icon.qrc
+    resources/icon.qrc

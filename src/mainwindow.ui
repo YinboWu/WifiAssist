@@ -34,7 +34,7 @@
    <string>WifiAssist</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="icon.qrc">
+   <iconset resource="../resources/icon.qrc">
     <normaloff>:/img/WifiAssist.ico</normaloff>:/img/WifiAssist.ico</iconset>
   </property>
   <property name="autoFillBackground">
@@ -103,7 +103,7 @@
       </size>
      </property>
      <attribute name="icon">
-      <iconset resource="icon.qrc">
+      <iconset resource="../resources/icon.qrc">
        <normaloff>:/img/WifiAssist.ico</normaloff>:/img/WifiAssist.ico</iconset>
      </attribute>
      <attribute name="title">
@@ -299,7 +299,7 @@ border-width:0px</string>
     </widget>
     <widget class="QWidget" name="tab_settings">
      <attribute name="icon">
-      <iconset resource="icon.qrc">
+      <iconset resource="../resources/icon.qrc">
        <normaloff>:/img/Settings.ico</normaloff>:/img/Settings.ico</iconset>
      </attribute>
      <attribute name="title">
@@ -446,7 +446,7 @@ padding: 1px 2px 1px 2px;</string>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="icon.qrc"/>
+  <include location="../resources/icon.qrc"/>
  </resources>
  <connections/>
 </ui>

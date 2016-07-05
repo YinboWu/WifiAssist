@@ -1,5 +1,5 @@
 #include "wifi.h"
-#include <wsettings.h>
+#include <src/wsettings.h>
 #include <iostream>
 Wifi::Wifi()
 {

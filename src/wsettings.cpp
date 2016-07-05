@@ -114,6 +114,15 @@ void WSettings::checkInterfaceListFile()
     //check is path exists
     QDir dir;
     QString config_path = dir.homePath()+"/.WifiAssist";
+
+    dir.setPath(config_path);
+    //if not exist,mkdir and Then set default config file.
+    if(!dir.exists())
+    {
+        dir.mkdir(config_path);
+    }
+
+
     //run net.sh to get interface list
     QString interface_list_filename = config_path+"/interface.list";
     QFile file;
@@ -130,7 +139,7 @@ void WSettings::checkInterfaceListFile()
 
         QElapsedTimer t;
         t.start();
-        while(t.elapsed()<1000)
+        while(t.elapsed()<2000)
             QCoreApplication::processEvents();
     }
 
@@ -181,6 +190,8 @@ void WSettings::setDefaultConfig()
 
     QString absolute_path = QCoreApplication::applicationDirPath()+"/bin/wifi.sh";
     this->setPath_exec(absolute_path);
+
+    this->setLanguage("en_US");
 }
 
 QStringList WSettings::getInterfaceList()
