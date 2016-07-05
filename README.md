@@ -32,7 +32,7 @@
   ```
   （建议卸载按照install.sh中的命令对应着逐个删除。）
 ## Snapshot
-![WifiAssit_init](https://github.com/lzjqsdd/WifiAssist/blob/master/img/WifiAssistForLinux.png)
+![WifiAssit_init](https://github.com/lzjqsdd/WifiAssist/blob/master/resources/img/WifiAssistForLinux.png)
 
 ## Thanks
   create_ap project:https://github.com/oblique/create_ap
