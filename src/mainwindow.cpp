@@ -15,11 +15,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
 
-    //initUILanguage
-    initUILanguageShow();
+    m_mutex = 0;
 
     //init UI information
     initUIValue();
+
+    //initUILanguage
+    initUILanguageShow();
 
     //create SystemTrayIcon Control
    // this->createSystemTrayMenu();
@@ -34,16 +36,28 @@ MainWindow::~MainWindow()
 void MainWindow::initUIValue()
 {
     ui->lineEdit_name->setText(m_wsettings.APName());
+
     ui->lineEdit_pwd ->setText(m_wsettings.Password());
+
     ui->lineEdit_ap->setText(m_wsettings.AccessPoint());
+
+
+   /* QRegExp ipRx("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-4]|[01]?\\d\\d?)");
+    QRegExpValidator *v = new QRegExpValidator(ipRx,this);
+    ui->lineEdit_ap->setValidator(v);*/
+    ui->lineEdit_ap->setInputMask("000.000.000.000;\ ");
+
 
     //get interface list
     QStringList interface_list = m_wsettings.getInterfaceList();
     ui->comboBox_createdinterface->addItems(interface_list);
     ui->comboBox_shareinterface->addItems(interface_list);
-
     ui->comboBox_createdinterface->setCurrentText(m_wsettings.Interface_Create());
     ui->comboBox_shareinterface->setCurrentText(m_wsettings.Interface_Shared());
+
+    QStringList language_list  = QStringList() << "English" << "简体中文";
+    ui->comboBox_language->addItems(language_list);
+
 }
 
 void MainWindow::initUILanguageShow()
@@ -56,6 +70,18 @@ void MainWindow::initUILanguageShow()
         ui->label_pwd->setText("密码");
         ui->label_shareinterface->setText("共享网卡");
         ui->label_createdinterface->setText("热点网卡");
+        ui->label_language->setText("语言");
+        ui->comboBox_language->setCurrentIndex(1);
+    }
+    else if(m_wsettings.Language() == "en_US")
+    {
+        ui->label_ap->setText("AccessPoint");
+        ui->label_name->setText("WifiName");
+        ui->label_pwd->setText("Password");
+        ui->label_shareinterface->setText("SharedInterface");
+        ui->label_createdinterface->setText("APInterface");
+        ui->label_language->setText("Language");
+        ui->comboBox_language->setCurrentIndex(0);
     }
 }
 
@@ -109,18 +135,30 @@ void MainWindow::on_pushButton_name_clicked()
 
 void MainWindow::on_lineEdit_name_editingFinished()
 {
-    //if config not changed,return
-    if(ui->lineEdit_name->text() == m_wsettings.APName())
-        return;
 
-    ui->lineEdit_name->setEnabled(false);
-    m_wsettings.setAPName(ui->lineEdit_name->text());
-    if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+    if(m_mutex == 0)
     {
-        ui->pushButton->setText("Restaring...");
-        wifi.restartWifi();
-        ui->pushButton->setText("STOP");
+        m_mutex = 1;
+        return;
     }
+    else
+    {
+        m_mutex = 0;
+        ui->lineEdit_name->setEnabled(false);
+        //if config not changed,return
+        if(ui->lineEdit_name->text() == m_wsettings.APName())
+            return;
+
+        ui->lineEdit_name->setEnabled(false);
+        m_wsettings.setAPName(ui->lineEdit_name->text());
+        if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+        {
+            ui->pushButton->setText("Restaring...");
+            wifi.restartWifi();
+            ui->pushButton->setText("STOP");
+        }
+    }
+
 }
 
 void MainWindow::on_pushButton_pwd_clicked()
@@ -130,18 +168,33 @@ void MainWindow::on_pushButton_pwd_clicked()
 
 void MainWindow::on_lineEdit_pwd_editingFinished()
 {
-    if(ui->lineEdit_pwd->text() == m_wsettings.Password())
-        return;
 
-
-    ui->lineEdit_pwd->setEnabled(false);
-    m_wsettings.setPassword(ui->lineEdit_pwd->text());
-    if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+    if(m_mutex == 0)
     {
-        ui->pushButton->setText("Restaring...");
-        wifi.restartWifi();
-        ui->pushButton->setText("STOP");
+        m_mutex = 1;
+        return;
     }
+    else
+    {
+        m_mutex = 0;
+        ui->lineEdit_pwd->setEnabled(false);
+        if(ui->lineEdit_pwd->text() == m_wsettings.Password())
+            return;
+        if(ui->lineEdit_pwd->text().size() < 8)
+            QMessageBox::information(this,"Settings","Password Should More Than 8 Characters!",QMessageBox::Warning);
+
+        ui->lineEdit_pwd->setEnabled(false);
+        m_wsettings.setPassword(ui->lineEdit_pwd->text());
+        if(QString::compare(ui->pushButton->text(),"STOP") == 0)
+        {
+            ui->pushButton->setText("Restaring...");
+            wifi.restartWifi();
+            ui->pushButton->setText("STOP");
+        }
+    }
+
+
+
 }
 
 void MainWindow::on_tabWidget_tabBarClicked(int index)
@@ -189,6 +242,18 @@ void MainWindow::on_pushButton_save_clicked()
     m_wsettings.setAccessPoint(apoint);
     m_wsettings.setInterface_Create(interface_created);
     m_wsettings.setInterface_Shared(interface_shared);
+
+    //save language config
+    switch (ui->comboBox_language->currentIndex())
+    {
+    case 0:
+         m_wsettings.setLanguage("en_US");break;
+    case 1:
+         m_wsettings.setLanguage("zh_CN");break;
+    default:
+        break;
+    }
+
     QMessageBox::information(this,"Settings","Apply Success!",QMessageBox::Ok);
 
 }

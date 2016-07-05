@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QSharedMemory>
+#include <QMutex>
 #include "wifi.h"
 #include "wdevices.h"
 #include "wsettings.h"
@@ -45,6 +47,8 @@ private:
     void createSystemTrayMenu(); //create customize menu
     void initUILanguageShow();
     void initUIValue();
+
+    int m_mutex;
 
 };
 

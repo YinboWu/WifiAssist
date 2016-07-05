@@ -64,7 +64,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>261</width>
+      <width>260</width>
       <height>400</height>
      </rect>
     </property>
@@ -112,7 +112,7 @@
      <widget class="QLabel" name="label_name">
       <property name="geometry">
        <rect>
-        <x>0</x>
+        <x>10</x>
         <y>40</y>
         <width>70</width>
         <height>20</height>
@@ -132,7 +132,7 @@
      <widget class="QLabel" name="label_pwd">
       <property name="geometry">
        <rect>
-        <x>0</x>
+        <x>10</x>
         <y>100</y>
         <width>70</width>
         <height>20</height>
@@ -154,7 +154,7 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>85</x>
+        <x>95</x>
         <y>90</y>
         <width>120</width>
         <height>30</height>
@@ -180,7 +180,7 @@ padding: 1px 2px 1px 2px;</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>85</x>
+        <x>95</x>
         <y>30</y>
         <width>120</width>
         <height>30</height>
@@ -206,7 +206,7 @@ padding: 1px 2px 1px 2px;</string>
      <widget class="QPushButton" name="pushButton_pwd">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>220</x>
         <y>100</y>
         <width>20</width>
         <height>20</height>
@@ -266,7 +266,7 @@ border-width:2px
      <widget class="QPushButton" name="pushButton_name">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>220</x>
         <y>40</y>
         <width>20</width>
         <height>20</height>
@@ -354,7 +354,7 @@ padding: 1px 2px 1px 2px;</string>
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>230</y>
+        <y>280</y>
         <width>100</width>
         <height>31</height>
        </rect>
@@ -429,6 +429,37 @@ padding: 1px 2px 1px 2px;</string>
        <rect>
         <x>120</x>
         <y>130</y>
+        <width>120</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 1.0px solid #000000;
+border-radius: 5px;
+padding: 1px 2px 1px 2px;</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_language">
+      <property name="geometry">
+       <rect>
+        <x>6</x>
+        <y>190</y>
+        <width>111</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SharedInterface</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="comboBox_language">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>180</y>
         <width>120</width>
         <height>30</height>
        </rect>

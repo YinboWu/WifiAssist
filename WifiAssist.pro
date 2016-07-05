@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = INSTALL/WifiAssist
+TARGET = ../INSTALL/WifiAssist
 TEMPLATE = app
 
 
@@ -22,7 +22,7 @@ HEADERS  += src/mainwindow.h \
     src/wifi.h \
     src/wsettings.h \
     src/wdevices.h
-    src/ui_mainwindow.h
+    ui_mainwindow.h
 
 FORMS    += src/mainwindow.ui
 
