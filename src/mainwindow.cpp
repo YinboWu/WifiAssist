@@ -44,18 +44,23 @@ void MainWindow::initUIValue()
 
    /* QRegExp ipRx("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-4]|[01]?\\d\\d?)");
     QRegExpValidator *v = new QRegExpValidator(ipRx,this);
-    ui->lineEdit_ap->setValidator(v);*/
-    ui->lineEdit_ap->setInputMask("000.000.000.000;\ ");
+    ui->lineEdit_ap->setValidator(v);
+    ui->lineEdit_ap->setInputMask("000.000.000.000;\ ");*/
 
 
     //get interface list
     QStringList interface_list = m_wsettings.getInterfaceList();
+
+    ui->comboBox_createdinterface->clear();
     ui->comboBox_createdinterface->addItems(interface_list);
-    ui->comboBox_shareinterface->addItems(interface_list);
     ui->comboBox_createdinterface->setCurrentText(m_wsettings.Interface_Create());
+
+    ui->comboBox_shareinterface->clear();
+    ui->comboBox_shareinterface->addItems(interface_list);
     ui->comboBox_shareinterface->setCurrentText(m_wsettings.Interface_Shared());
 
     QStringList language_list  = QStringList() << "English" << "简体中文";
+    ui->comboBox_language->clear();
     ui->comboBox_language->addItems(language_list);
 
 }
@@ -256,4 +261,11 @@ void MainWindow::on_pushButton_save_clicked()
 
     QMessageBox::information(this,"Settings","Apply Success!",QMessageBox::Ok);
 
+}
+
+void MainWindow::on_pushButton_reset_clicked()
+{
+     m_wsettings.setDefaultConfig();
+     this->initUIValue();
+     QMessageBox::information(this,"Settings","Reset Success!",QMessageBox::Ok);
 }

@@ -40,6 +40,8 @@ private slots:
 
     void on_pushButton_save_clicked();
 
+    void on_pushButton_reset_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon m_trayIcon;
