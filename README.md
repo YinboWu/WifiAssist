@@ -4,11 +4,11 @@
   The easy way to use Wifi through PC.
   类似windows平台下的猎豹免费wifi
 
-## 最新版下载: https://github.com/lzjqsdd/WifiAssist/releases/tag/v0.5
+## 最新版下载: https://github.com/lzjqsdd/WifiAssist/releases/tag/v0.6
   
 ## TODOLIST
 - [x] 简单开启并关闭wifi
-- [x] 增加接入点设置、wifi名称、密码设置
+- [x] 增加接入点设置、wifi名称、密码设置,重置设置
 - [x] 桌面图标启动
 - [x] 自动获取系统网卡列表
 - [ ] 系统托盘控制（14.04有bug）
