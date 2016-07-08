@@ -2,7 +2,8 @@
 #include <QProcess>
 #include <QTextStream>
 
-WSettings::WSettings()
+WSettings::WSettings():
+    m_settings(new QSettings)
 {        
        setConfigAttrName();
        checkInterfaceListFile();

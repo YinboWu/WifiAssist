@@ -5,18 +5,16 @@
 #    util-linux (for getopt)
 #    procps or procps-ng
 #    hostapd
-#    hostapd_cli
 #    iproute2
 #    iw
 #    iwconfig (you only need this if 'iw' can not recognize your adapter)
 #    haveged (optional)
-#    arp
 
 # dependencies for 'nat' or 'none' Internet sharing method
 #    dnsmasq
 #    iptables
 
-VERSION=0.1
+VERSION=0.2
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -32,38 +30,51 @@ usage() {
     echo "Usage: "$PROGNAME" [options] <wifi-interface> [<interface-with-internet>] [<access-point-name> [<passphrase>]]"
     echo
     echo "Options:"
-    echo "  -h, --help          Show this help"
-    echo "  --version           Print version number"
-    echo "  -c <channel>        Channel number (default: 1)"
-    echo "  -w <WPA version>    Use 1 for WPA, use 2 for WPA2, use 1+2 for both (default: 1+2)"
-    echo "  -n                  Disable Internet sharing (if you use this, don't pass"
-    echo "                      the <interface-with-internet> argument)"
-    echo "  -m <method>         Method for Internet sharing."
-    echo "                      Use: 'nat' for NAT (default)"
-    echo "                           'bridge' for bridging"
-    echo "                           'none' for no Internet sharing (equivalent to -n)"
-    echo "  --hidden            Make the Access Point hidden (do not broadcast the SSID)"
-    echo "  --ieee80211n        Enable IEEE 802.11n (HT)"
-    echo "  --ht_capab <HT>     HT capabilities (default: [HT40+])"
-    echo "  --country <code>    Set two-letter country code for regularity (example: US)"
-    echo "  --freq-band <GHz>   Set frequency band. Valid inputs: 2.4, 5 (default: 2.4)"
-    echo "  --driver            Choose your WiFi adapter driver (default: nl80211)"
-    echo "  --no-virt           Do not create virtual interface"
-    echo "  --no-haveged        Do not run \`haveged' automatically when needed"
-    echo "  --fix-unmanaged     If NetworkManager shows your interface as unmanaged after you"
-    echo "                      close create_ap, then use this option to switch your interface"
-    echo "                      back to managed"
-    echo "  --mac <MAC>         Set MAC address"
-    echo "  --daemon            Run create_ap in the background"
-    echo "  --stop <id>         Send stop command to an already running create_ap. For an <id>"
-    echo "                      you can put the PID of create_ap or the WiFi interface. You can"
-    echo "                      get them with --list"
-    echo "  --list              Show the create_ap processes that are already running"
-    echo "  --all-sta           Show the stations that connected to AP"
+    echo "  -h, --help              Show this help"
+    echo "  --version               Print version number"
+    echo "  -c <channel>            Channel number (default: 1)"
+    echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, use 1+2 for both (default: 1+2)"
+    echo "  -n                      Disable Internet sharing (if you use this, don't pass"
+    echo "                          the <interface-with-internet> argument)"
+    echo "  -m <method>             Method for Internet sharing."
+    echo "                          Use: 'nat' for NAT (default)"
+    echo "                               'bridge' for bridging"
+    echo "                               'none' for no Internet sharing (equivalent to -n)"
+    echo "  --psk                   Use 64 hex digits pre-shared-key instead of passphrase"
+    echo "  --hidden                Make the Access Point hidden (do not broadcast the SSID)"
+    echo "  --redirect-to-localhost If -n is set, redirect every web request to localhost (useful for public information networks)"
+    echo "  --hostapd-debug <level> With level between 1 and 2, passes arguments -d or -dd to hostapd for debugging."
+    echo "  --isolate-clients       Disable communication between clients"
+    echo "  --ieee80211n            Enable IEEE 802.11n (HT)"
+    echo "  --ieee80211ac           Enable IEEE 802.11ac (VHT)"
+    echo "  --ht_capab <HT>         HT capabilities (default: [HT40+])"
+    echo "  --vht_capab <VHT>       VHT capabilities"
+    echo "  --country <code>        Set two-letter country code for regularity (example: US)"
+    echo "  --freq-band <GHz>       Set frequency band. Valid inputs: 2.4, 5 (default: 2.4)"
+    echo "  --driver                Choose your WiFi adapter driver (default: nl80211)"
+    echo "  --no-virt               Do not create virtual interface"
+    echo "  --no-haveged            Do not run 'haveged' automatically when needed"
+    echo "  --fix-unmanaged         If NetworkManager shows your interface as unmanaged after you"
+    echo "                          close create_ap, then use this option to switch your interface"
+    echo "                          back to managed"
+    echo "  --mac <MAC>             Set MAC address"
+    echo "  --dhcp-dns <IP1[,IP2]>  Set DNS returned by DHCP"
+    echo "  --daemon                Run create_ap in the background"
+    echo "  --stop <id>             Send stop command to an already running create_ap. For an <id>"
+    echo "                          you can put the PID of create_ap or the WiFi interface. You can"
+    echo "                          get them with --list-running"
+    echo "  --list-running          Show the create_ap processes that are already running"
+    echo "  --list-clients <id>     List the clients connected to create_ap instance associated with <id>."
+    echo "                          For an <id> you can put the PID of create_ap or the WiFi interface."
+    echo "                          If virtual WiFi interface was created, then use that one."
+    echo "                          You can get them with --list-running"
+    echo "  --mkconfig <conf_file>  Store configs in conf_file"
+    echo "  --config <conf_file>    Load configs from conf_file"
     echo
     echo "Non-Bridging Options:"
-    echo "  -g <gateway>        IPv4 Gateway for the Access Point (default: 192.168.12.1)"
-    echo "  -d                  DNS server will take into account /etc/hosts"
+    echo "  --no-dns                Disable dnsmasq DNS server"
+    echo "  -g <gateway>            IPv4 Gateway for the Access Point (default: 192.168.12.1)"
+    echo "  -d                      DNS server will take into account /etc/hosts"
     echo
     echo "Useful informations:"
     echo "  * If you're not using the --no-virt option, then you can create an AP with the same"
@@ -86,75 +97,104 @@ usage() {
     echo "  "$PROGNAME" --stop wlan0"
 }
 
-# allocate lock for the caller bash thread
-alloc_lock() {
-    # lock file for creating mutex
-    local LOCK_FILE=/tmp/create_ap.lock
-    local LOCK_FD=LOCK_FD_$BASHPID
-
-    # if lock FD is already allocated just return
-    eval "[[ \$$LOCK_FD -ne 0 ]]" && return 0
-
-    # use the lowest unused FD. avoid FD 0 because we use it to
-    # indicate that LOCK_FD_$BASHPID is not set.
+# on success it echos a non-zero unused FD
+# on error it echos 0
+get_avail_fd() {
+    local x
     for x in $(seq 1 $(ulimit -n)); do
         if [[ ! -a "/proc/$BASHPID/fd/$x" ]]; then
-            eval "$LOCK_FD=$x"
-
-            # open/create lock file with write access for all users
-            # otherwise normal users will not be able to use it.
-            # to avoid race conditions on creation, we need to
-            # use umask to set the permissions.
-            umask 0555
-            eval "eval \"exec \$$LOCK_FD>$LOCK_FILE\"" > /dev/null 2>&1 || return 1
-            umask $SCRIPT_UMASK
-
-            # there is a case where lock file was created from a normal
-            # user. change the owner to root as soon as we can.
-            [[ $(id -u) -eq 0 ]] && chown 0:0 $LOCK_FILE
-
-            return 0
+            echo $x
+            return
         fi
     done
-
-    return 1
+    echo 0
 }
 
-# recursive mutex lock for all create_ap processes/threads.
-#
-# WARNING: if you lock in a function that their caller need their
-# output (i.e. the caller use | or $()) then you can have dead-lock
-# if the caller took the lock before. this happens because bash creates
-# a new thread for the callie function.
-mutex_lock() {
-    local MUTEX_COUNTER=MUTEX_COUNTER_$BASHPID
-    local LOCK_FD=LOCK_FD_$BASHPID
+# lock file for the mutex counter
+COUNTER_LOCK_FILE=/tmp/create_ap.$$.lock
 
-    # allocate lock FD if needed
-    if eval "[[ \$$LOCK_FD -eq 0 ]]"; then
-        alloc_lock || die "Failed to allocate lock"
+cleanup_lock() {
+    rm -f $COUNTER_LOCK_FILE
+}
+
+init_lock() {
+    local LOCK_FILE=/tmp/create_ap.all.lock
+
+    # we initialize only once
+    [[ $LOCK_FD -ne 0 ]] && return 0
+
+    LOCK_FD=$(get_avail_fd)
+    [[ $LOCK_FD -eq 0 ]] && return 1
+
+    # open/create lock file with write access for all users
+    # otherwise normal users will not be able to use it.
+    # to avoid race conditions on creation, we need to
+    # use umask to set the permissions.
+    umask 0555
+    eval "exec $LOCK_FD>$LOCK_FILE" > /dev/null 2>&1 || return 1
+    umask $SCRIPT_UMASK
+
+    # there is a case where lock file was created from a normal
+    # user. change the owner to root as soon as we can.
+    [[ $(id -u) -eq 0 ]] && chown 0:0 $LOCK_FILE
+
+    # create mutex counter lock file
+    echo 0 > $COUNTER_LOCK_FILE
+
+    return $?
+}
+
+# recursive mutex lock for all create_ap processes
+mutex_lock() {
+    local counter_mutex_fd
+    local counter
+
+    # lock local mutex and read counter
+    counter_mutex_fd=$(get_avail_fd)
+    if [[ $counter_mutex_fd -ne 0 ]]; then
+        eval "exec $counter_mutex_fd<>$COUNTER_LOCK_FILE"
+        flock $counter_mutex_fd
+        read -u $counter_mutex_fd counter
+    else
+        echo "Failed to lock mutex counter" >&2
+        return 1
     fi
 
-    # lock if needed and increase the counter
-    eval "[[ \$$MUTEX_COUNTER -eq 0 ]]" && eval "flock \$$LOCK_FD"
-    eval "$MUTEX_COUNTER=\$(( \$$MUTEX_COUNTER + 1 ))"
+    # lock global mutex and increase counter
+    [[ $counter -eq 0 ]] && flock $LOCK_FD
+    counter=$(( $counter + 1 ))
 
+    # write counter and unlock local mutex
+    echo $counter > /proc/$BASHPID/fd/$counter_mutex_fd
+    eval "exec ${counter_mutex_fd}<&-"
     return 0
 }
 
-# recursive mutex unlock for all create_ap processes/threads
+# recursive mutex unlock for all create_ap processes
 mutex_unlock() {
-    local MUTEX_COUNTER=MUTEX_COUNTER_$BASHPID
-    local LOCK_FD=LOCK_FD_$BASHPID
+    local counter_mutex_fd
+    local counter
 
-    # if lock FD was not allocated or we didn't lock before
-    # then just return
-    eval "[[ \$$LOCK_FD -eq 0 || \$$MUTEX_COUNTER -eq 0 ]]" && return 0
+    # lock local mutex and read counter
+    counter_mutex_fd=$(get_avail_fd)
+    if [[ $counter_mutex_fd -ne 0 ]]; then
+        eval "exec $counter_mutex_fd<>$COUNTER_LOCK_FILE"
+        flock $counter_mutex_fd
+        read -u $counter_mutex_fd counter
+    else
+        echo "Failed to lock mutex counter" >&2
+        return 1
+    fi
 
-    # unlock if needed and decrease the counter
-    eval "$MUTEX_COUNTER=\$(( \$$MUTEX_COUNTER - 1 ))"
-    eval "[[ \$$MUTEX_COUNTER -eq 0 ]]" && eval "flock -u \$$LOCK_FD"
+    # decrease counter and unlock global mutex
+    if [[ $counter -gt 0 ]]; then
+        counter=$(( $counter - 1 ))
+        [[ $counter -eq 0 ]] && flock -u $LOCK_FD
+    fi
 
+    # write counter and unlock local mutex
+    echo $counter > /proc/$BASHPID/fd/$counter_mutex_fd
+    eval "exec ${counter_mutex_fd}<&-"
     return 0
 }
 
@@ -266,7 +306,7 @@ can_transmit_to_channel() {
         return 0
     else
         CHANNEL_NUM=$(printf '%02d' ${CHANNEL_NUM})
-        CHANNEL_INFO=$(iwlist ${IFACE} channel | grep "Channel ${CHANNEL_NUM} :")
+        CHANNEL_INFO=$(iwlist ${IFACE} channel | grep -E "Channel[[:blank:]]${CHANNEL_NUM}[[:blank:]]?:")
         [[ -z "${CHANNEL_INFO}" ]] && return 1
         return 0
     fi
@@ -320,13 +360,22 @@ get_macaddr() {
     cat "/sys/class/net/${1}/address"
 }
 
-get_avail_bridge() {
+get_mtu() {
+    is_interface "$1" || return
+    cat "/sys/class/net/${1}/mtu"
+}
+
+alloc_new_iface() {
+    local prefix=$1
     local i=0
+
     mutex_lock
     while :; do
-        if ! is_interface br${i}; then
+        if ! is_interface $prefix$i && [[ ! -f $COMMON_CONFDIR/ifaces/$prefix$i ]]; then
+            mkdir -p $COMMON_CONFDIR/ifaces
+            touch $COMMON_CONFDIR/ifaces/$prefix$i
+            echo $prefix$i
             mutex_unlock
-            echo br${i}
             return
         fi
         i=$((i + 1))
@@ -334,18 +383,8 @@ get_avail_bridge() {
     mutex_unlock
 }
 
-get_virt_iface_name() {
-    local i=0
-    mutex_lock
-    while :; do
-        if ! is_interface ap${i}; then
-            mutex_unlock
-            echo ap${i}
-            return
-        fi
-        i=$((i+1))
-    done
-    mutex_unlock
+dealloc_iface() {
+    rm -f $COMMON_CONFDIR/ifaces/$1
 }
 
 get_all_macaddrs() {
@@ -379,11 +418,7 @@ haveged_watchdog() {
             elif ! pidof haveged > /dev/null 2>&1; then
                 echo "Low entropy detected, starting haveged"
                 # boost low-entropy
-                haveged -w 1024 -F > /dev/null 2>&1 &
-                local haveged_pid=$!
-                echo $haveged_pid > $CONFDIR/haveged.pid
-                mutex_unlock
-                wait $haveged_pid
+                haveged -w 1024 -p $COMMON_CONFDIR/haveged.pid
             fi
         fi
         mutex_unlock
@@ -411,16 +446,16 @@ networkmanager_is_running() {
     local NMCLI_OUT
     networkmanager_exists || return 1
     if [[ $NM_OLDER_VERSION -eq 1 ]]; then
-        NMCLI_OUT=$(nmcli -t -f RUNNING nm)
+        NMCLI_OUT=$(nmcli -t -f RUNNING nm 2>&1 | grep -E '^running$')
     else
-        NMCLI_OUT=$(nmcli -t -f RUNNING g)
+        NMCLI_OUT=$(nmcli -t -f RUNNING g 2>&1 | grep -E '^running$')
     fi
-    [[ "$NMCLI_OUT" == "running" ]]
+    [[ -n "$NMCLI_OUT" ]]
 }
 
 networkmanager_iface_is_unmanaged() {
     is_interface "$1" || return 2
-    (nmcli -t -f DEVICE,STATE d | grep -E "^$1:unmanaged$" > /dev/null 2>&1) || return 1
+    (nmcli -t -f DEVICE,STATE d 2>&1 | grep -E "^$1:unmanaged$" > /dev/null 2>&1) || return 1
 }
 
 ADDED_UNMANAGED=
@@ -478,6 +513,9 @@ networkmanager_add_unmanaged() {
     ADDED_UNMANAGED="${ADDED_UNMANAGED} ${1} "
     mutex_unlock
 
+    local nm_pid=$(pidof NetworkManager)
+    [[ -n "$nm_pid" ]] && kill -HUP $nm_pid
+
     return 0
 }
 
@@ -518,14 +556,21 @@ networkmanager_rm_unmanaged() {
     ADDED_UNMANAGED="${ADDED_UNMANAGED/ ${1} /}"
     mutex_unlock
 
+    local nm_pid=$(pidof NetworkManager)
+    [[ -n "$nm_pid" ]] && kill -HUP $nm_pid
+
     return 0
 }
 
 networkmanager_fix_unmanaged() {
     [[ -f ${NETWORKMANAGER_CONF} ]] || return
+
     mutex_lock
     sed -e "/^unmanaged-devices=.*/d" -i ${NETWORKMANAGER_CONF}
     mutex_unlock
+
+    local nm_pid=$(pidof NetworkManager)
+    [[ -n "$nm_pid" ]] && kill -HUP $nm_pid
 }
 
 networkmanager_rm_unmanaged_if_needed() {
@@ -552,29 +597,45 @@ CHANNEL=default
 GATEWAY=192.168.12.1
 WPA_VERSION=1+2
 ETC_HOSTS=0
+DHCP_DNS=gateway
+NO_DNS=0
 HIDDEN=0
+ISOLATE_CLIENTS=0
 SHARE_METHOD=nat
 IEEE80211N=0
+IEEE80211AC=0
 HT_CAPAB='[HT40+]'
+VHT_CAPAB=
 DRIVER=nl80211
 NO_VIRT=0
-FIX_UNMANAGED=0
 COUNTRY=
 FREQ_BAND=2.4
 NEW_MACADDR=
 DAEMONIZE=0
+NO_HAVEGED=0
+USE_PSK=0
+
+HOSTAPD_DEBUG_ARGS=
+REDIRECT_TO_LOCALHOST=0
+
+CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS HIDDEN ISOLATE_CLIENTS SHARE_METHOD
+             IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
+             NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
+             SSID PASSPHRASE USE_PSK)
+
+FIX_UNMANAGED=0
 LIST_RUNNING=0
 STOP_ID=
-NO_HAVEGED=0
-ALL_STA=0
+LIST_CLIENTS_ID=
+
+STORE_CONFIG=
+LOAD_CONFIG=
 
 CONFDIR=
 WIFI_IFACE=
 VWIFI_IFACE=
 INTERNET_IFACE=
 BRIDGE_IFACE=
-OLD_IP_FORWARD=
-OLD_BRIDGE_IPTABLES=
 OLD_MACADDR=
 IP_ADDRS=
 ROUTE_ADDRS=
@@ -584,37 +645,66 @@ HAVEGED_WATCHDOG_PID=
 _cleanup() {
     local PID x
 
+    trap "" SIGINT SIGUSR1 SIGUSR2 EXIT
     mutex_lock
-
-    trap "" SIGINT SIGUSR1 SIGUSR2
+    disown -a
 
     # kill haveged_watchdog
     [[ -n "$HAVEGED_WATCHDOG_PID" ]] && kill $HAVEGED_WATCHDOG_PID
 
-    # exiting
+    # kill processes
     for x in $CONFDIR/*.pid; do
         # even if the $CONFDIR is empty, the for loop will assign
         # a value in $x. so we need to check if the value is a file
-        if [[ -f $x ]]; then
-            PID=$(cat $x)
-            disown $PID
-            kill -9 $PID
+        [[ -f $x ]] && kill -9 $(cat $x)
+    done
+
+    rm -rf $CONFDIR
+
+    local found=0
+    for x in $(list_running_conf); do
+        if [[ -f $x/nat_internet_iface && $(cat $x/nat_internet_iface) == $INTERNET_IFACE ]]; then
+            found=1
+            break
         fi
     done
-    rm -rf $CONFDIR
-	rm -rf /tmp/wifipath
+
+    if [[ $found -eq 0 ]]; then
+        cp -f $COMMON_CONFDIR/${INTERNET_IFACE}_forwarding \
+           /proc/sys/net/ipv4/conf/$INTERNET_IFACE/forwarding
+        rm -f $COMMON_CONFDIR/${INTERNET_IFACE}_forwarding
+    fi
+
+    # if we are the last create_ap instance then set back the common values
+    if ! has_running_instance; then
+        # kill common processes
+        for x in $COMMON_CONFDIR/*.pid; do
+            [[ -f $x ]] && kill -9 $(cat $x)
+        done
+
+        # set old ip_forward
+        if [[ -f $COMMON_CONFDIR/ip_forward ]]; then
+            cp -f $COMMON_CONFDIR/ip_forward /proc/sys/net/ipv4
+            rm -f $COMMON_CONFDIR/ip_forward
+        fi
+
+        # set old bridge-nf-call-iptables
+        if [[ -f $COMMON_CONFDIR/bridge-nf-call-iptables ]]; then
+            if [[ -e /proc/sys/net/bridge/bridge-nf-call-iptables ]]; then
+                cp -f $COMMON_CONFDIR/bridge-nf-call-iptables /proc/sys/net/bridge
+            fi
+            rm -f $COMMON_CONFDIR/bridge-nf-call-iptables
+        fi
+
+        rm -rf $COMMON_CONFDIR
+    fi
 
     if [[ "$SHARE_METHOD" != "none" ]]; then
         if [[ "$SHARE_METHOD" == "nat" ]]; then
-            iptables -t nat -D POSTROUTING -o ${INTERNET_IFACE} -s ${GATEWAY%.*}.0/24 -j MASQUERADE
-            iptables -D FORWARD -i ${WIFI_IFACE} -s ${GATEWAY%.*}.0/24 -j ACCEPT
-            iptables -D FORWARD -i ${INTERNET_IFACE} -d ${GATEWAY%.*}.0/24 -j ACCEPT
-            [[ -n "$OLD_IP_FORWARD" ]] && echo $OLD_IP_FORWARD > /proc/sys/net/ipv4/ip_forward
+            iptables -w -t nat -D POSTROUTING -o ${INTERNET_IFACE} -s ${GATEWAY%.*}.0/24 -j MASQUERADE
+            iptables -w -D FORWARD -i ${WIFI_IFACE} -s ${GATEWAY%.*}.0/24 -j ACCEPT
+            iptables -w -D FORWARD -i ${INTERNET_IFACE} -d ${GATEWAY%.*}.0/24 -j ACCEPT
         elif [[ "$SHARE_METHOD" == "bridge" ]]; then
-            if [[ -n "$OLD_BRIDGE_IPTABLES" ]]; then
-                echo $OLD_BRIDGE_IPTABLES > /proc/sys/net/bridge/bridge-nf-call-iptables
-            fi
-
             if ! is_bridge_interface $INTERNET_IFACE; then
                 ip link set dev $BRIDGE_IFACE down
                 ip link set dev $INTERNET_IFACE down
@@ -623,6 +713,7 @@ _cleanup() {
                 ip link delete $BRIDGE_IFACE type bridge
                 ip addr flush $INTERNET_IFACE
                 ip link set dev $INTERNET_IFACE up
+                dealloc_iface $BRIDGE_IFACE
 
                 for x in "${IP_ADDRS[@]}"; do
                     x="${x/inet/}"
@@ -653,9 +744,15 @@ _cleanup() {
     fi
 
     if [[ "$SHARE_METHOD" != "bridge" ]]; then
-        iptables -D INPUT -p tcp -m tcp --dport 53 -j ACCEPT
-        iptables -D INPUT -p udp -m udp --dport 53 -j ACCEPT
-        iptables -D INPUT -p udp -m udp --dport 67 -j ACCEPT
+        if [[ $NO_DNS -eq 0 ]]; then
+            iptables -w -D INPUT -p tcp -m tcp --dport 5353 -j ACCEPT
+            iptables -w -D INPUT -p udp -m udp --dport 5353 -j ACCEPT
+            iptables -w -t nat -D PREROUTING -s ${GATEWAY%.*}.0/24 -d ${GATEWAY} \
+                -p tcp -m tcp --dport 53 -j REDIRECT --to-ports 5353
+            iptables -w -t nat -D PREROUTING -s ${GATEWAY%.*}.0/24 -d ${GATEWAY} \
+                -p udp -m udp --dport 53 -j REDIRECT --to-ports 5353
+        fi
+        iptables -w -D INPUT -p udp -m udp --dport 67 -j ACCEPT
     fi
 
     if [[ $NO_VIRT -eq 0 ]]; then
@@ -664,6 +761,7 @@ _cleanup() {
             ip addr flush ${VWIFI_IFACE}
             networkmanager_rm_unmanaged_if_needed ${VWIFI_IFACE} ${OLD_MACADDR}
             iw dev ${VWIFI_IFACE} del
+            dealloc_iface $VWIFI_IFACE
         fi
     else
         ip link set down dev ${WIFI_IFACE}
@@ -675,6 +773,7 @@ _cleanup() {
     fi
 
     mutex_unlock
+    cleanup_lock
 }
 
 cleanup() {
@@ -686,61 +785,138 @@ cleanup() {
 
 die() {
     [[ -n "$1" ]] && echo -e "\nERROR: $1\n" >&2
-    # we cleanup and exit only if we are the main thread
-    if [[ $$ -eq $BASHPID ]]; then
-       cleanup
-       exit 1
-    else
-        # send die signal to the main thread
-        kill -USR2 $$
-        # terminate our thread
-        kill -9 $BASHPID
-    fi
+    # send die signal to the main process
+    [[ $BASHPID -ne $$ ]] && kill -USR2 $$
+    # we don't need to call cleanup because it's traped on EXIT
+    exit 1
 }
 
 clean_exit() {
-    # we cleanup and exit only if we are the main thread
-    if [[ $$ -eq $BASHPID ]]; then
-       cleanup
-       exit 0
+    # send clean_exit signal to the main process
+    [[ $BASHPID -ne $$ ]] && kill -USR1 $$
+    # we don't need to call cleanup because it's traped on EXIT
+    exit 0
+}
+
+list_running_conf() {
+    local x
+    mutex_lock
+    for x in /tmp/create_ap.*; do
+        if [[ -f $x/pid && -f $x/wifi_iface && -d /proc/$(cat $x/pid) ]]; then
+            echo $x
+        fi
+    done
+    mutex_unlock
+}
+
+list_running() {
+    local IFACE wifi_iface x
+    mutex_lock
+    for x in $(list_running_conf); do
+        IFACE=${x#*.}
+        IFACE=${IFACE%%.*}
+        wifi_iface=$(cat $x/wifi_iface)
+
+        if [[ $IFACE == $wifi_iface ]]; then
+            echo $(cat $x/pid) $IFACE
+        else
+            echo $(cat $x/pid) $IFACE '('$(cat $x/wifi_iface)')'
+        fi
+    done
+    mutex_unlock
+}
+
+get_wifi_iface_from_pid() {
+    list_running | awk '{print $1 " " $NF}' | tr -d '\(\)' | grep -E "^${1} " | cut -d' ' -f2
+}
+
+get_pid_from_wifi_iface() {
+    list_running | awk '{print $1 " " $NF}' | tr -d '\(\)' | grep -E " ${1}$" | cut -d' ' -f1
+}
+
+get_confdir_from_pid() {
+    local IFACE x
+    mutex_lock
+    for x in $(list_running_conf); do
+        if [[ $(cat $x/pid) == "$1" ]]; then
+            echo $x
+            break
+        fi
+    done
+    mutex_unlock
+}
+
+print_client() {
+    local line ipaddr hostname
+    local mac="$1"
+
+    if [[ -f $CONFDIR/dnsmasq.leases ]]; then
+        line=$(grep " $mac " $CONFDIR/dnsmasq.leases | tail -n 1)
+        ipaddr=$(echo $line | cut -d' ' -f3)
+        hostname=$(echo $line | cut -d' ' -f4)
+    fi
+
+    [[ -z "$ipaddr" ]] && ipaddr="*"
+    [[ -z "$hostname" ]] && hostname="*"
+
+    printf "%-20s %-18s %s\n" "$mac" "$ipaddr" "$hostname"
+}
+
+list_clients() {
+    local wifi_iface pid
+
+    # If PID is given, get the associated wifi iface
+    if [[ "$1" =~ ^[1-9][0-9]*$ ]]; then
+        pid="$1"
+        wifi_iface=$(get_wifi_iface_from_pid "$pid")
+        [[ -z "$wifi_iface" ]] && die "'$pid' is not the pid of a running $PROGNAME instance."
+    fi
+
+    [[ -z "$wifi_iface" ]] && wifi_iface="$1"
+    is_wifi_interface "$wifi_iface" || die "'$wifi_iface' is not a WiFi interface."
+
+    [[ -z "$pid" ]] && pid=$(get_pid_from_wifi_iface "$wifi_iface")
+    [[ -z "$pid" ]] && die "'$wifi_iface' is not used from $PROGNAME instance.\n\
+       Maybe you need to pass the virtual interface instead.\n\
+       Use --list-running to find it out."
+    [[ -z "$CONFDIR" ]] && CONFDIR=$(get_confdir_from_pid "$pid")
+
+    if [[ $USE_IWCONFIG -eq 0 ]]; then
+        local awk_cmd='($1 ~ /Station$/) {print $2}'
+        local client_list=$(iw dev "$wifi_iface" station dump | awk "$awk_cmd")
+
+        if [[ -z "$client_list" ]]; then
+            echo "No clients connected"
+            return
+        fi
+
+        printf "%-20s %-18s %s\n" "MAC" "IP" "Hostname"
+
+        local mac
+        for mac in $client_list; do
+            print_client $mac
+        done
     else
-        # send clean_exit signal to the main thread
-        kill -USR1 $$
-        # terminate our thread
-        kill -9 $BASHPID
+        die "This option is not supported for the current driver."
     fi
 }
 
-# WARNING: never call mutex_lock in this function, otherwise we
-# will have dead-lock when send_stop is called
-list_running() {
-    local PID IFACE x
+has_running_instance() {
+    local PID x
+
+    mutex_lock
     for x in /tmp/create_ap.*; do
         if [[ -f $x/pid ]]; then
             PID=$(cat $x/pid)
             if [[ -d /proc/$PID ]]; then
-                IFACE=${x#*.}
-                IFACE=${IFACE%%.*}
-                echo $PID $IFACE
+                mutex_unlock
+                return 0
             fi
         fi
     done
-}
+    mutex_lock
 
-# show list of stations connected to AP
-list_sta() {
-#	arp | grep eth0|awk -F ' ' '{print $1,$3}'
-#	hostapd_cli -p $CONFDIR/hostapd_ctrl all_sta | sed '1d' | awk 'NR%20==1'
-#	hostapd_cli
-#	echo $(`cat /tmp/wifipath`)
-#	hostapd_cli -p `cat /tmp/wifipath` | sed '1d' | awk 'NR%20==1'
-#	cat /tmp/wifipath | while read myline
-#	do 
-#		echo "LINE:"$myline
-#	done
-#	cat /tmp/wifipath | read line
-	read CONFDIR <<< $(cat /tmp/wifipath)
-	hostapd_cli -p $CONFDIR/hostapd_ctrl all_sta | sed '1d' | awk 'NR%20==1'
+    return 1
 }
 
 is_running_pid() {
@@ -759,14 +935,84 @@ send_stop() {
     fi
 
     # send stop signal to specific interface
-    for x in $(list_running | grep -E " ${1}\$" | cut -f1 -d' '); do
+    for x in $(list_running | grep -E " \(?${1}( |\)?\$)" | cut -f1 -d' '); do
         kill -USR1 $x
     done
     mutex_unlock
 }
 
+# Storing configs
+write_config() {
+    local i=1
+
+    if ! eval 'echo -n > "$STORE_CONFIG"' > /dev/null 2>&1; then
+        echo "ERROR: Unable to create config file $STORE_CONFIG" >&2
+        exit 1
+    fi
+
+    WIFI_IFACE=$1
+    if [[ "$SHARE_METHOD" == "none" ]]; then
+        SSID="$2"
+        PASSPHRASE="$3"
+    else
+        INTERNET_IFACE="$2"
+        SSID="$3"
+        PASSPHRASE="$4"
+    fi
+
+    for config_opt in "${CONFIG_OPTS[@]}"; do
+        eval echo $config_opt=\$$config_opt
+    done >> "$STORE_CONFIG"
+
+    echo -e "Config options written to '$STORE_CONFIG'"
+    exit 0
+}
+
+is_config_opt() {
+    local elem opt="$1"
+
+    for elem in "${CONFIG_OPTS[@]}"; do
+        if [[ "$elem" == "$opt" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Load options from config file
+read_config() {
+    local opt_name opt_val line
+
+    while read line; do
+        # Read switches and their values
+        opt_name="${line%%=*}"
+        opt_val="${line#*=}"
+        if is_config_opt "$opt_name" ; then
+            eval $opt_name="\$opt_val"
+        else
+            echo "WARN: Unrecognized configuration entry $opt_name" >&2
+        fi
+    done < "$LOAD_CONFIG"
+}
+
+
 ARGS=( "$@" )
-GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","ieee80211n","ht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","daemon","stop:","list","all-sta","version","no-haveged" -n "$PROGNAME" -- "$@")
+
+# Preprocessing for --config before option-parsing starts
+for ((i=0; i<$#; i++)); do
+    if [[ "${ARGS[i]}" = "--config" ]]; then
+        if [[ -f "${ARGS[i+1]}" ]]; then
+            LOAD_CONFIG="${ARGS[i+1]}"
+            read_config
+        else
+            echo "ERROR: No config file found at given location" >&2
+            exit 1
+        fi
+        break
+    fi
+done
+
+GETOPT_ARGS=$(getopt -o hc:w:g:dnm: -l "help","hidden","hostapd-debug:","redirect-to-localhost","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -783,6 +1029,10 @@ while :; do
         --hidden)
             shift
             HIDDEN=1
+            ;;
+        --isolate-clients)
+            shift
+            ISOLATE_CLIENTS=1
             ;;
         -c)
             shift
@@ -817,9 +1067,18 @@ while :; do
             shift
             IEEE80211N=1
             ;;
+        --ieee80211ac)
+            shift
+            IEEE80211AC=1
+            ;;
         --ht_capab)
             shift
             HT_CAPAB="$1"
+            shift
+            ;;
+        --vht_capab)
+            shift
+            VHT_CAPAB="$1"
             shift
             ;;
         --driver)
@@ -850,6 +1109,11 @@ while :; do
             NEW_MACADDR="$1"
             shift
             ;;
+        --dhcp-dns)
+            shift
+            DHCP_DNS="$1"
+            shift
+            ;;
         --daemon)
             shift
             DAEMONIZE=1
@@ -862,14 +1126,53 @@ while :; do
         --list)
             shift
             LIST_RUNNING=1
+            echo -e "WARN: --list is deprecated, use --list-running instead.\n" >&2
             ;;
-		--all-sta)
+        --list-running)
             shift
-			ALL_STA=1
-	    	;;
+            LIST_RUNNING=1
+            ;;
+        --list-clients)
+            shift
+            LIST_CLIENTS_ID="$1"
+            shift
+            ;;
         --no-haveged)
             shift
             NO_HAVEGED=1
+            ;;
+        --psk)
+            shift
+            USE_PSK=1
+            ;;
+        --no-dns)
+            shift
+            NO_DNS=1
+            ;;
+        --redirect-to-localhost)
+            shift
+            REDIRECT_TO_LOCALHOST=1
+            ;;
+        --hostapd-debug)
+            shift
+            if [ "x$1" = "x1" ]; then
+                HOSTAPD_DEBUG_ARGS="-d"
+            elif [ "x$1" = "x2" ]; then
+                HOSTAPD_DEBUG_ARGS="-dd"
+            else
+                printf "Error: argument for --hostapd-debug expected 1 or 2, got %s\n" "$1"
+                exit 1
+            fi
+            shift
+            ;;
+        --mkconfig)
+            shift
+            STORE_CONFIG="$1"
+            shift
+            ;;
+        --config)
+            shift
+            shift
             ;;
         --)
             shift
@@ -878,15 +1181,31 @@ while :; do
     esac
 done
 
+# Load positional args from config file, if needed
+if [[ -n "$LOAD_CONFIG" && $# -eq 0 ]]; then
+    i=0
+    # set arguments in order
+    for x in WIFI_IFACE INTERNET_IFACE SSID PASSPHRASE; do
+        if eval "[[ -n \"\$${x}\" ]]"; then
+            eval "set -- \"\${@:1:$i}\" \"\$${x}\""
+            ((i++))
+        fi
+        # we unset the variable to avoid any problems later
+        eval "unset $x"
+    done
+fi
 
-if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" && $LIST_RUNNING -eq 0 && $ALL_STA -eq 0 ]]; then
+# Check if required number of positional args are present
+if [[ $# -lt 1 && $FIX_UNMANAGED -eq 0  && -z "$STOP_ID" &&
+      $LIST_RUNNING -eq 0 && -z "$LIST_CLIENTS_ID" ]]; then
     usage >&2
     exit 1
 fi
 
-# allocate lock for the main thread to avoid any failures later
-if ! alloc_lock; then
-    echo "ERROR: Failed to allocate lock" >&2
+trap "cleanup_lock" EXIT
+
+if ! init_lock; then
+    echo "ERROR: Failed to initialize lock" >&2
     exit 1
 fi
 
@@ -896,16 +1215,16 @@ trap "clean_exit" SIGINT SIGUSR1
 # if we get USR2 signal then run die().
 trap "die" SIGUSR2
 
+[[ -n "$STORE_CONFIG" ]] && write_config "$@"
+
 if [[ $LIST_RUNNING -eq 1 ]]; then
-    mutex_lock
+    echo -e "List of running $PROGNAME instances:\n"
     list_running
-    mutex_unlock
     exit 0
 fi
 
-if [[ $ALL_STA -eq 1 ]]; then
-#    echo "Stations connect to AP list:"
-	list_sta
+if [[ -n "$LIST_CLIENTS_ID" ]]; then
+    list_clients "$LIST_CLIENTS_ID"
     exit 0
 fi
 
@@ -915,24 +1234,21 @@ if [[ $(id -u) -ne 0 ]]; then
 fi
 
 if [[ -n "$STOP_ID" ]]; then
+    echo "Trying to kill $PROGNAME instance associated with $STOP_ID..."
     send_stop "$STOP_ID"
     exit 0
 fi
 
 if [[ $FIX_UNMANAGED -eq 1 ]]; then
+    echo "Trying to fix unmanaged status in NetworkManager..."
     networkmanager_fix_unmanaged
     exit 0
 fi
 
-if [[ $DAEMONIZE -eq 1 ]]; then
-    # remove --daemon
-    NEW_ARGS=( )
-    for x in "${ARGS[@]}"; do
-        [[ "$x" != "--daemon" ]] && NEW_ARGS+=( "$x" )
-    done
-
+if [[ $DAEMONIZE -eq 1 && $RUNNING_AS_DAEMON -eq 0 ]]; then
+    echo "Running as Daemon..."
     # run a detached create_ap
-    setsid "$0" "${NEW_ARGS[@]}" &
+    RUNNING_AS_DAEMON=1 setsid "$0" "${ARGS[@]}" &
     exit 0
 fi
 
@@ -976,8 +1292,15 @@ if ! can_be_sta_and_ap ${WIFI_IFACE}; then
     fi
 fi
 
+HOSTAPD=$(which hostapd)
+
+if [[ ! -x "$HOSTAPD" ]]; then
+    echo "ERROR: hostapd not found." >&2
+    exit 1
+fi
+
 if [[ $(get_adapter_kernel_module ${WIFI_IFACE}) =~ ^(8192[cd][ue]|8723a[sue])$ ]]; then
-    if ! strings $(which hostapd) | grep -m1 rtl871xdrv > /dev/null 2>&1; then
+    if ! strings "$HOSTAPD" | grep -m1 rtl871xdrv > /dev/null 2>&1; then
         echo "ERROR: You need to patch your hostapd with rtl871xdrv patches." >&2
         exit 1
     fi
@@ -1023,16 +1346,16 @@ if [[ $# -gt $MIN_REQUIRED_ARGS ]]; then
             usage >&2
             exit 1
         fi
-        INTERNET_IFACE=$2
-        SSID=$3
-        PASSPHRASE=$4
+        INTERNET_IFACE="$2"
+        SSID="$3"
+        PASSPHRASE="$4"
     else
         if [[ $# -ne 2 && $# -ne 3 ]]; then
             usage >&2
             exit 1
         fi
-        SSID=$2
-        PASSPHRASE=$3
+        SSID="$2"
+        PASSPHRASE="$3"
     fi
 else
     if [[ "$SHARE_METHOD" != "none" ]]; then
@@ -1040,7 +1363,7 @@ else
             usage >&2
             exit 1
         fi
-        INTERNET_IFACE=$2
+        INTERNET_IFACE="$2"
     fi
     if tty -s; then
         while :; do
@@ -1052,18 +1375,27 @@ else
             break
         done
         while :; do
-            read -p "Passphrase: " -s PASSPHRASE
-            echo
-            if [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -lt 8 ]] || [[ ${#PASSPHRASE} -gt 63 ]]; then
-                echo "ERROR: Invalid passphrase length ${#PASSPHRASE} (expected 8..63)" >&2
-                continue
-            fi
-            read -p "Retype passphrase: " -s PASSPHRASE2
-            echo
-            if [[ "$PASSPHRASE" != "$PASSPHRASE2" ]]; then
-                echo "Passphrases do not match."
+            if [[ $USE_PSK -eq 0 ]]; then
+                read -p "Passphrase: " -s PASSPHRASE
+                echo
+                if [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -lt 8 ]] || [[ ${#PASSPHRASE} -gt 63 ]]; then
+                    echo "ERROR: Invalid passphrase length ${#PASSPHRASE} (expected 8..63)" >&2
+                    continue
+                fi
+                read -p "Retype passphrase: " -s PASSPHRASE2
+                echo
+                if [[ "$PASSPHRASE" != "$PASSPHRASE2" ]]; then
+                    echo "Passphrases do not match."
+                else
+                    break
+                fi
             else
-                break
+                read -p "PSK: " PASSPHRASE
+                echo
+                if [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -ne 64 ]]; then
+                    echo "ERROR: Invalid pre-shared-key length ${#PASSPHRASE} (expected 64)" >&2
+                    continue
+                fi
             fi
         done
     else
@@ -1082,8 +1414,13 @@ if [[ ${#SSID} -lt 1 || ${#SSID} -gt 32 ]]; then
     exit 1
 fi
 
-if [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -lt 8 ]] || [[ ${#PASSPHRASE} -gt 63 ]]; then
-    echo "ERROR: Invalid passphrase length ${#PASSPHRASE} (expected 8..63)" >&2
+if [[ $USE_PSK -eq 0 ]]; then
+    if [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -lt 8 ]] || [[ ${#PASSPHRASE} -gt 63 ]]; then
+        echo "ERROR: Invalid passphrase length ${#PASSPHRASE} (expected 8..63)" >&2
+        exit 1
+    fi
+elif [[ ${#PASSPHRASE} -gt 0 && ${#PASSPHRASE} -ne 64 ]]; then
+    echo "ERROR: Invalid pre-shared-key length ${#PASSPHRASE} (expected 64)" >&2
     exit 1
 fi
 
@@ -1095,20 +1432,6 @@ if [[ $(get_adapter_kernel_module ${WIFI_IFACE}) =~ ^rtl[0-9].*$ ]]; then
     echo "WARN: If AP doesn't work, please read: howto/realtek.md" >&2
 fi
 
-if [[ "$SHARE_METHOD" == "bridge" ]]; then
-    if [[ -e /proc/sys/net/bridge/bridge-nf-call-iptables ]]; then
-        OLD_BRIDGE_IPTABLES=$(cat /proc/sys/net/bridge/bridge-nf-call-iptables)
-    fi
-
-    if is_bridge_interface $INTERNET_IFACE; then
-        BRIDGE_IFACE=$INTERNET_IFACE
-    else
-        BRIDGE_IFACE=$(get_avail_bridge)
-    fi
-elif [[ "$SHARE_METHOD" == "nat" ]]; then
-    OLD_IP_FORWARD=$(cat /proc/sys/net/ipv4/ip_forward)
-fi
-
 if [[ $NO_VIRT -eq 1 && "$WIFI_IFACE" == "$INTERNET_IFACE" ]]; then
     echo -n "ERROR: You can not share your connection from the same" >&2
     echo " interface if you are using --no-virt option." >&2
@@ -1116,20 +1439,45 @@ if [[ $NO_VIRT -eq 1 && "$WIFI_IFACE" == "$INTERNET_IFACE" ]]; then
 fi
 
 mutex_lock
+trap "cleanup" EXIT
 CONFDIR=$(mktemp -d /tmp/create_ap.${WIFI_IFACE}.conf.XXXXXXXX)
 echo "Config dir: $CONFDIR"
 echo "PID: $$"
 echo $$ > $CONFDIR/pid
-echo $CONFDIR > /tmp/wifipath
 
-# to make --list work from any user, we must give read
-# permitions to $CONFDIR and $CONFDIR/pid
+# to make --list-running work from any user, we must give read
+# permissions to $CONFDIR and $CONFDIR/pid
 chmod 755 $CONFDIR
 chmod 444 $CONFDIR/pid
+
+COMMON_CONFDIR=/tmp/create_ap.common.conf
+mkdir -p $COMMON_CONFDIR
+
+if [[ "$SHARE_METHOD" == "nat" ]]; then
+    echo $INTERNET_IFACE > $CONFDIR/nat_internet_iface
+    cp -n /proc/sys/net/ipv4/conf/$INTERNET_IFACE/forwarding \
+       $COMMON_CONFDIR/${INTERNET_IFACE}_forwarding
+fi
+cp -n /proc/sys/net/ipv4/ip_forward $COMMON_CONFDIR
+if [[ -e /proc/sys/net/bridge/bridge-nf-call-iptables ]]; then
+    cp -n /proc/sys/net/bridge/bridge-nf-call-iptables $COMMON_CONFDIR
+fi
 mutex_unlock
 
+if [[ "$SHARE_METHOD" == "bridge" ]]; then
+    if is_bridge_interface $INTERNET_IFACE; then
+        BRIDGE_IFACE=$INTERNET_IFACE
+    else
+        BRIDGE_IFACE=$(alloc_new_iface br)
+    fi
+fi
+
+if [[ $USE_IWCONFIG -eq 0 ]]; then
+    iw dev ${WIFI_IFACE} set power_save off
+fi
+
 if [[ $NO_VIRT -eq 0 ]]; then
-    VWIFI_IFACE=$(get_virt_iface_name)
+    VWIFI_IFACE=$(alloc_new_iface ap)
 
     # in NetworkManager 0.9.9 and above we can set the interface as unmanaged without
     # the need of MAC address, so we set it before we create the virtual interface.
@@ -1162,7 +1510,7 @@ if [[ $NO_VIRT -eq 0 ]]; then
        Try again with --no-virt."
     echo -n "Creating a virtual WiFi interface... "
 
-    if iw dev ${WIFI_IFACE} interface add ${VWIFI_IFACE} type managed; then
+    if iw dev ${WIFI_IFACE} interface add ${VWIFI_IFACE} type __ap; then
         # now we can call networkmanager_wait_until_unmanaged
         networkmanager_is_running && [[ $NM_OLDER_VERSION -eq 0 ]] && networkmanager_wait_until_unmanaged ${VWIFI_IFACE}
         echo "${VWIFI_IFACE} created."
@@ -1179,16 +1527,31 @@ else
     OLD_MACADDR=$(get_macaddr ${WIFI_IFACE})
 fi
 
+mutex_lock
+echo $WIFI_IFACE > $CONFDIR/wifi_iface
+chmod 444 $CONFDIR/wifi_iface
+mutex_unlock
+
+if [[ -n "$COUNTRY" && $USE_IWCONFIG -eq 0 ]]; then
+    iw reg set "$COUNTRY"
+fi
+
 can_transmit_to_channel ${WIFI_IFACE} ${CHANNEL} || die "Your adapter can not transmit to channel ${CHANNEL}, frequency band ${FREQ_BAND}GHz."
 
-if networkmanager_is_running && ! networkmanager_iface_is_unmanaged ${WIFI_IFACE}; then
+if networkmanager_exists && ! networkmanager_iface_is_unmanaged ${WIFI_IFACE}; then
     echo -n "Network Manager found, set ${WIFI_IFACE} as unmanaged device... "
     networkmanager_add_unmanaged ${WIFI_IFACE}
-    networkmanager_wait_until_unmanaged ${WIFI_IFACE}
+
+    if networkmanager_is_running; then
+        networkmanager_wait_until_unmanaged ${WIFI_IFACE}
+    fi
+
     echo "DONE"
 fi
 
 [[ $HIDDEN -eq 1 ]] && echo "Access Point's SSID is hidden!"
+
+[[ $ISOLATE_CLIENTS -eq 1 ]] && echo "Access Point's clients will be isolated!"
 
 # hostapd config
 cat << EOF > $CONFDIR/hostapd.conf
@@ -1200,11 +1563,14 @@ channel=${CHANNEL}
 ctrl_interface=$CONFDIR/hostapd_ctrl
 ctrl_interface_group=0
 ignore_broadcast_ssid=$HIDDEN
+ap_isolate=$ISOLATE_CLIENTS
 EOF
 
-if [[ -n $COUNTRY ]]; then
-    [[ $USE_IWCONFIG -eq 0 ]] && iw reg set $COUNTRY
-    echo "country_code=${COUNTRY}" >> $CONFDIR/hostapd.conf
+if [[ -n "$COUNTRY" ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+country_code=${COUNTRY}
+ieee80211d=1
+EOF
 fi
 
 if [[ $FREQ_BAND == 2.4 ]]; then
@@ -1216,16 +1582,32 @@ fi
 if [[ $IEEE80211N -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 ieee80211n=1
-wmm_enabled=1
 ht_capab=${HT_CAPAB}
 EOF
 fi
 
+if [[ $IEEE80211AC -eq 1 ]]; then
+    echo "ieee80211ac=1" >> $CONFDIR/hostapd.conf
+fi
+
+if [[ -n "$VHT_CAPAB" ]]; then
+    echo "vht_capab=${VHT_CAPAB}" >> $CONFDIR/hostapd.conf
+fi
+
+if [[ $IEEE80211N -eq 1 ]] || [[ $IEEE80211AC -eq 1 ]]; then
+    echo "wmm_enabled=1" >> $CONFDIR/hostapd.conf
+fi
+
 if [[ -n "$PASSPHRASE" ]]; then
     [[ "$WPA_VERSION" == "1+2" ]] && WPA_VERSION=3
+    if [[ $USE_PSK -eq 0 ]]; then
+        WPA_KEY_TYPE=passphrase
+    else
+        WPA_KEY_TYPE=psk
+    fi
     cat << EOF >> $CONFDIR/hostapd.conf
 wpa=${WPA_VERSION}
-wpa_passphrase=$PASSPHRASE
+wpa_${WPA_KEY_TYPE}=${PASSPHRASE}
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP CCMP
 rsn_pairwise=CCMP
@@ -1243,13 +1625,24 @@ else
     else
         DNSMASQ_BIND=bind-dynamic
     fi
+    if [[ "$DHCP_DNS" == "gateway" ]]; then
+        DHCP_DNS="$GATEWAY"
+    fi
     cat << EOF > $CONFDIR/dnsmasq.conf
 listen-address=${GATEWAY}
 ${DNSMASQ_BIND}
 dhcp-range=${GATEWAY%.*}.1,${GATEWAY%.*}.254,255.255.255.0,24h
-dhcp-option=option:router,${GATEWAY}
+dhcp-option-force=option:router,${GATEWAY}
+dhcp-option-force=option:dns-server,${DHCP_DNS}
 EOF
+    MTU=$(get_mtu $INTERNET_IFACE)
+    [[ -n "$MTU" ]] && echo "dhcp-option-force=option:mtu,${MTU}" >> $CONFDIR/dnsmasq.conf
     [[ $ETC_HOSTS -eq 0 ]] && echo no-hosts >> $CONFDIR/dnsmasq.conf
+    if [[ "$SHARE_METHOD" == "none" && "$REDIRECT_TO_LOCALHOST" == "1" ]]; then
+        cat << EOF >> $CONFDIR/dnsmasq.conf
+address=/#/$GATEWAY
+EOF
+    fi
 fi
 
 # initialize WiFi interface
@@ -1273,9 +1666,10 @@ fi
 if [[ "$SHARE_METHOD" != "none" ]]; then
     echo "Sharing Internet using method: $SHARE_METHOD"
     if [[ "$SHARE_METHOD" == "nat" ]]; then
-        iptables -t nat -I POSTROUTING -o ${INTERNET_IFACE} -s ${GATEWAY%.*}.0/24 -j MASQUERADE || die
-        iptables -I FORWARD -i ${WIFI_IFACE} -s ${GATEWAY%.*}.0/24 -j ACCEPT || die
-        iptables -I FORWARD -i ${INTERNET_IFACE} -d ${GATEWAY%.*}.0/24 -j ACCEPT || die
+        iptables -w -t nat -I POSTROUTING -o ${INTERNET_IFACE} -s ${GATEWAY%.*}.0/24 -j MASQUERADE || die
+        iptables -w -I FORWARD -i ${WIFI_IFACE} -s ${GATEWAY%.*}.0/24 -j ACCEPT || die
+        iptables -w -I FORWARD -i ${INTERNET_IFACE} -d ${GATEWAY%.*}.0/24 -j ACCEPT || die
+        echo 1 > /proc/sys/net/ipv4/conf/$INTERNET_IFACE/forwarding || die
         echo 1 > /proc/sys/net/ipv4/ip_forward || die
         # to enable clients to establish PPTP connections we must
         # load nf_nat_pptp module
@@ -1354,12 +1748,30 @@ else
     echo "No Internet sharing"
 fi
 
-# start dns + dhcp server
+# start dhcp + dns (optional)
 if [[ "$SHARE_METHOD" != "bridge" ]]; then
-    iptables -I INPUT -p tcp -m tcp --dport 53 -j ACCEPT || die
-    iptables -I INPUT -p udp -m udp --dport 53 -j ACCEPT || die
-    iptables -I INPUT -p udp -m udp --dport 67 -j ACCEPT || die
-    dnsmasq -C $CONFDIR/dnsmasq.conf -x $CONFDIR/dnsmasq.pid || die
+    if [[ $NO_DNS -eq 0 ]]; then
+        DNS_PORT=5353
+        iptables -w -I INPUT -p tcp -m tcp --dport $DNS_PORT -j ACCEPT || die
+        iptables -w -I INPUT -p udp -m udp --dport $DNS_PORT -j ACCEPT || die
+        iptables -w -t nat -I PREROUTING -s ${GATEWAY%.*}.0/24 -d ${GATEWAY} \
+            -p tcp -m tcp --dport 53 -j REDIRECT --to-ports $DNS_PORT || die
+        iptables -w -t nat -I PREROUTING -s ${GATEWAY%.*}.0/24 -d ${GATEWAY} \
+            -p udp -m udp --dport 53 -j REDIRECT --to-ports $DNS_PORT || die
+    else
+        DNS_PORT=0
+    fi
+    iptables -w -I INPUT -p udp -m udp --dport 67 -j ACCEPT || die
+
+    if which complain > /dev/null 2>&1; then
+        # openSUSE's apparmor does not allow dnsmasq to read files.
+        # remove restriction.
+        complain dnsmasq
+    fi
+
+    umask 0033
+    dnsmasq -C $CONFDIR/dnsmasq.conf -x $CONFDIR/dnsmasq.pid -l $CONFDIR/dnsmasq.leases -p $DNS_PORT || die
+    umask $SCRIPT_UMASK
 fi
 
 # start access point
@@ -1370,8 +1782,8 @@ if [[ $NO_HAVEGED -eq 0 ]]; then
     HAVEGED_WATCHDOG_PID=$!
 fi
 
-# start hostapd
-hostapd $CONFDIR/hostapd.conf &
+# start hostapd (use stdbuf for no delayed output in programs that redirect stdout)
+stdbuf -oL $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf &
 HOSTAPD_PID=$!
 echo $HOSTAPD_PID > $CONFDIR/hostapd.pid
 
@@ -1396,3 +1808,5 @@ clean_exit
 # tab-width: 4
 # indent-tabs-mode: nil
 # End:
+
+# vim: et sts=4 sw=4
