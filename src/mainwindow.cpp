@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
-    QMessageBox::information(this,"Settings","Password Should More Than 8 Characters!",QMessageBox::Warning);
     m_mutex = 0;
 
     //init UI information

@@ -50,62 +50,62 @@ void WSettings::setAccessPoint(const QString &AccessPoint)
 
 QString WSettings::Interface_Shared() const
 {
-    return this->getSettings(this->_Interface_Shared);
+    return this->getSettings(_Interface_Shared);
 }
 
 void WSettings::setInterface_Shared(const QString &Interface_Shared)
 {
-   this->setSettings(this->_Interface_Shared,Interface_Shared);
+   this->setSettings(_Interface_Shared,Interface_Shared);
 }
 
 QString WSettings::Interface_Create() const
 {
-    return this->getSettings(this->_Interface_Create);
+    return this->getSettings(_Interface_Create);
 }
 
 void WSettings::setInterface_Create(const QString &Interface_Create)
 {
-    this->setSettings(this->_Interface_Create,Interface_Create);
+    this->setSettings(_Interface_Create,Interface_Create);
 }
 
 QString WSettings::Password() const
 {
-    return this->getSettings(this->_Password);
+    return this->getSettings(_Password);
 }
 
 void WSettings::setPassword(const QString &Password)
 {
-    this->setSettings(this->_Password,Password);
+    this->setSettings(_Password,Password);
 }
 
 QString WSettings::APName() const
 {
-    return this->getSettings(this->_APName);
+    return this->getSettings(_APName);
 }
 
 void WSettings::setAPName(const QString &APName)
 {
-    this->setSettings(this->_APName,APName);
+    this->setSettings(_APName,APName);
 }
 
 QString WSettings::path_exec() const
 {
-    return this->getSettings(this->_path_exec);
+    return this->getSettings(_path_exec);
 }
 
 void WSettings::setPath_exec(const QString &path_exec)
 {
-    this->setSettings(this->_path_exec,path_exec);
+    this->setSettings(_path_exec,path_exec);
 }
 
 QString WSettings::Language() const
 {
-    return this->getSettings(this->_Language);
+    return this->getSettings(_Language);
 }
 
 void WSettings::setLanguage(const QString &Language)
 {
-    this->setSettings(this->_Language,Language);
+    this->setSettings(_Language,Language);
 }
 
 
