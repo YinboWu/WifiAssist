@@ -32,7 +32,7 @@ void WSettings::setSettings(const QString &name,const QString &value)
     m_settings->setValue(fullpath,value);
 }
 
-QString WSettings::getSettings(const QString&name) const
+QString WSettings::getSettings(const QString &name) const
 {
     QString fullpath = "/settings/"+name;
     return m_settings->value(fullpath).toString();
@@ -160,11 +160,11 @@ void WSettings::checkConfigFile()
     {
         dir.mkdir(config_path);
     }
-
     QFile file;
     file.setFileName(filename);
     if(!file.exists())
     {
+
         m_settings = new QSettings(filename,QSettings::IniFormat);
         setDefaultConfig();
     }
@@ -182,12 +182,12 @@ void WSettings::setDefaultConfig()
     if(interface_list.contains("eth0"))
         this->setInterface_Shared("eth0");
     else
-        this->setInterface_Shared(*interface_list.begin());
+        this->setInterface_Shared(interface_list.at(0));
 
     if(interface_list.contains("wlan0"))
         this->setInterface_Create("wlan0");
     else
-        this->setInterface_Create(*interface_list.end());
+        this->setInterface_Create(interface_list.at(interface_list.size()-1));
 
     QString absolute_path = QCoreApplication::applicationDirPath()+"/bin/wifi.sh";
     this->setPath_exec(absolute_path);

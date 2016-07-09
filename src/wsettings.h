@@ -1,3 +1,4 @@
+
 #ifndef WSETTINGS_H
 #define WSETTINGS_H
 #include "QString"
