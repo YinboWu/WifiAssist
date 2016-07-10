@@ -1,3 +1,6 @@
+sudo: required
+dist: trusty
+
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install qtbase5-dev qtdeclarative5-dev libqt5webkit5-dev libsqlite3-dev
