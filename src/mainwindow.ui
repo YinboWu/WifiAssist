@@ -90,11 +90,13 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
-    <property name="tabBarAutoHide">
+<!--  
+	<property name="tabBarAutoHide">
      <bool>false</bool>
     </property>
+-->
     <widget class="QWidget" name="tab_main">
      <property name="minimumSize">
       <size>

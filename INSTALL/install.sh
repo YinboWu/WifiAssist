@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -d "/usr/local/WifiAssist" ]; then
+	echo "Exists Old version,uninstall ..."
+	sudo ./uninstall.sh
+fi
 echo "Install WifiAssist ..."
 sudo mkdir /usr/local/WifiAssist
 sudo cp WifiAssist wifi /usr/local/WifiAssist/
