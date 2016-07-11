@@ -92,11 +92,6 @@
     <property name="currentIndex">
      <number>1</number>
     </property>
-<!--  
-	<property name="tabBarAutoHide">
-     <bool>false</bool>
-    </property>
--->
     <widget class="QWidget" name="tab_main">
      <property name="minimumSize">
       <size>
@@ -621,6 +616,34 @@ padding: 1px 2px 1px 2px;</string>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>260</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>settings</string>
+    </property>
+    <addaction name="actionCheck_update"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuAbout"/>
+  </widget>
+  <action name="actionCheck_update">
+   <property name="text">
+    <string>CheckUpdate</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

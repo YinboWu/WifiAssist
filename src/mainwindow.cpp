@@ -268,3 +268,10 @@ void MainWindow::on_pushButton_reset_clicked()
      this->initUIValue();
      QMessageBox::information(this,"Settings","Reset Success!",QMessageBox::Ok);
 }
+
+void MainWindow::on_actionAbout_triggered()
+{
+    About *aboutDlg = new About;
+    aboutDlg->show();
+    aboutDlg->exec();
+}
