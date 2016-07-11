@@ -16,15 +16,18 @@ SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/wifi.cpp \
     src/wsettings.cpp \
-    src/wdevices.cpp
+    src/wdevices.cpp \
+    src/about.cpp
 
 HEADERS  += src/mainwindow.h \
     src/wifi.h \
     src/wsettings.h \
-    src/wdevices.h
+    src/wdevices.h \
+    src/about.h
     ui_mainwindow.h
 
-FORMS    += src/mainwindow.ui
+FORMS    += src/mainwindow.ui \
+    src/about.ui
 
 DISTFILES +=
 
