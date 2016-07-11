@@ -17,17 +17,17 @@ SOURCES += src/main.cpp\
     src/wifi.cpp \
     src/wsettings.cpp \
     src/wdevices.cpp \
-    src/updater.cpp
+    src/about.cpp
 
 HEADERS  += src/mainwindow.h \
     src/wifi.h \
     src/wsettings.h \
     src/wdevices.h \
-    src/updater.h
+    src/about.h
     ui_mainwindow.h
 
 FORMS    += src/mainwindow.ui \
-    src/updater.ui
+    src/about.ui
 
 DISTFILES +=
 

@@ -9,6 +9,7 @@
 #include "wifi.h"
 #include "wdevices.h"
 #include "wsettings.h"
+#include "about.h"
 
 namespace Ui {
 class MainWindow;
@@ -41,6 +42,8 @@ private slots:
     void on_pushButton_save_clicked();
 
     void on_pushButton_reset_clicked();
+
+    void on_actionAbout_triggered();
 
 private:
     Ui::MainWindow *ui;

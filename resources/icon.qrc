@@ -4,5 +4,6 @@
         <file>img/WifiAssist.ico</file>
         <file>img/Settings.ico</file>
         <file>img/Devices.ico</file>
+        <file>img/WifiAssistIcon_100x100.jpg</file>
     </qresource>
 </RCC>
